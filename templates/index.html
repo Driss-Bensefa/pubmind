@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PubMind — Agent de veille scientifique</title>
+<style>
+  :root {
+    --ink: #e8e6e0;
+    --ink-soft: #8a8a82;
+    --paper: #0d0d0c;
+    --line: #2a2a27;
+    --accent: #4ade80;
+    --accent-soft: #15201a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Iowan Old Style', 'Georgia', serif;
+    min-height: 100vh;
+  }
+
+  .shell {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 64px 24px 80px;
+  }
+
+  .masthead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 18px;
+    margin-bottom: 48px;
+  }
+
+  .masthead .mark {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .masthead .mark span {
+    color: var(--accent);
+  }
+
+  .masthead .byline {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .lede {
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--ink-soft);
+    margin-bottom: 48px;
+    max-width: 56ch;
+  }
+
+  .lede strong {
+    color: var(--ink);
+  }
+
+  form {
+    border-top: 1px solid var(--line);
+    padding-top: 36px;
+  }
+
+  .field {
+    margin-bottom: 28px;
+  }
+
+  .field label {
+    display: block;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+
+  .field .hint {
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-style: italic;
+    margin-top: 6px;
+  }
+
+  input[type="text"],
+  select {
+    width: 100%;
+    font-family: 'Iowan Old Style', 'Georgia', serif;
+    font-size: 17px;
+    padding: 12px 0;
+    border: none;
+    border-bottom: 1px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+  }
+
+  select {
+    color-scheme: dark;
+  }
+
+  select option {
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  input[type="text"]:focus,
+  select:focus {
+    outline: none;
+    border-bottom: 2px solid var(--accent);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  .profiles {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .profile-option {
+    position: relative;
+  }
+
+  .profile-option input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  .profile-option label {
+    display: block;
+    border: 1px solid var(--line);
+    padding: 14px 16px;
+    cursor: pointer;
+    font-family: 'Georgia', serif;
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 14px;
+    color: var(--ink);
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .profile-option label .name {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .profile-option label .desc {
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  .profile-option input:checked + label {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .submit-row {
+    margin-top: 44px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  button {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: var(--accent);
+    color: var(--paper);
+    border: none;
+    padding: 16px 32px;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+  }
+
+  button:hover {
+    opacity: 0.85;
+  }
+
+  .submit-note {
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  @media (max-width: 560px) {
+    .row, .profiles { grid-template-columns: 1fr; }
+    .masthead { flex-direction: column; align-items: flex-start; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <div class="masthead">
+    <div class="mark">Pub<span>Mind</span></div>
+    <div class="byline">Driss Bensefa — BIMS Rouen</div>
+  </div>
+
+  <p class="lede">
+    Interroge directement <strong>PubMed</strong> et reçois une synthèse
+    structurée, sourcée et adaptée à ton profil — en quelques secondes
+    plutôt qu'en plusieurs heures de lecture.
+  </p>
+
+  <form action="/recherche" method="POST">
+
+    <div class="field">
+      <label for="sujet">Sujet ou question</label>
+      <input type="text" id="sujet" name="sujet" placeholder="ex. CRISPR base editing cancer 2024" required>
+      <div class="hint">Une phrase précise donne de meilleurs résultats qu'un seul mot.</div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="nb_articles">Nombre d'articles</label>
+        <select id="nb_articles" name="nb_articles">
+          <option value="10" selected>10 — test rapide</option>
+          <option value="25">25 — standard</option>
+          <option value="50">50 — approfondi</option>
+          <option value="100">100 — large veille</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field" style="margin-top: 28px;">
+      <label>Profil de lecture</label>
+      <div class="profiles">
+
+        <div class="profile-option">
+          <input type="radio" id="p-etudiant" name="profil" value="etudiant">
+          <label for="p-etudiant">
+            <span class="name">Étudiant</span>
+            <span class="desc">explications simplifiées</span>
+          </label>
+        </div>
+
+        <div class="profile-option">
+          <input type="radio" id="p-chercheur" name="profil" value="chercheur" checked>
+          <label for="p-chercheur">
+            <span class="name">Chercheur</span>
+            <span class="desc">protocoles et données</span>
+          </label>
+        </div>
+
+        <div class="profile-option">
+          <input type="radio" id="p-reviewer" name="profil" value="reviewer">
+          <label for="p-reviewer">
+            <span class="name">Reviewer</span>
+            <span class="desc">évaluation critique</span>
+          </label>
+        </div>
+
+        <div class="profile-option">
+          <input type="radio" id="p-veille" name="profil" value="veille">
+          <label for="p-veille">
+            <span class="name">Veille</span>
+            <span class="desc">tendances du domaine</span>
+          </label>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="submit-row">
+      <button type="submit">Analyser</button>
+      <span class="submit-note">L'analyse prend généralement 15 à 40 secondes.</span>
+    </div>
+
+  </form>
+
+  <footer>
+    <span>PubMind v1.0</span>
+    <span>Powered by NCBI/PubMed</span>
+  </footer>
+
+</div>
+
+</body>
+</html>

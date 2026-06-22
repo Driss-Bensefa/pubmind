@@ -1,0 +1,5 @@
+biopython
+anthropic
+flask
+markdown
+requests

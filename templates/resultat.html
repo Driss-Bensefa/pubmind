@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PubMind — Résultat</title>
+<style>
+  :root {
+    --ink: #e8e6e0;
+    --ink-soft: #8a8a82;
+    --paper: #0d0d0c;
+    --line: #2a2a27;
+    --accent: #4ade80;
+    --accent-soft: #15201a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Iowan Old Style', 'Georgia', serif;
+    min-height: 100vh;
+  }
+
+  .shell {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px 100px;
+  }
+
+  .masthead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 18px;
+    margin-bottom: 8px;
+  }
+
+  .masthead .mark {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .masthead .mark span {
+    color: var(--accent);
+  }
+
+  .masthead a {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    border: 1px solid var(--line);
+    padding: 8px 14px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .masthead a:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .query-bar {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    padding: 14px 0 36px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 36px;
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .query-bar .tag {
+    color: var(--accent);
+  }
+
+  /* Contenu de la synthèse — rendu HTML depuis markdown */
+  .synthese {
+    font-size: 16px;
+    line-height: 1.75;
+  }
+
+  .synthese h1, .synthese h2, .synthese h3 {
+    color: var(--accent);
+    margin: 28px 0 10px;
+    font-size: 15px;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+  }
+
+  .synthese h4, .synthese h5, .synthese h6 {
+    color: var(--ink);
+    margin: 18px 0 8px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .synthese p {
+    margin-bottom: 14px;
+  }
+
+  .synthese ul, .synthese ol {
+    margin: 10px 0 14px 22px;
+  }
+
+  .synthese li {
+    margin-bottom: 6px;
+  }
+
+  .synthese table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 14px;
+  }
+
+  .synthese th, .synthese td {
+    border: 1px solid var(--line);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .synthese th {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .synthese strong {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .synthese em {
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  .synthese a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .synthese a:hover {
+    text-decoration: underline;
+  }
+
+  .synthese hr {
+    border: none;
+    border-top: 1px solid var(--line);
+    margin: 24px 0;
+  }
+
+  .synthese code {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+
+  .synthese blockquote {
+    border-left: 3px solid var(--accent);
+    padding-left: 16px;
+    color: var(--ink-soft);
+    margin: 14px 0;
+    font-style: italic;
+  }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  @media (max-width: 560px) {
+    .masthead { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .query-bar { flex-direction: column; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <div class="masthead">
+    <div class="mark">Pub<span>Mind</span></div>
+    <a href="/">← Nouvelle recherche</a>
+  </div>
+
+  <div class="query-bar">
+    <span><span class="tag">Sujet</span> · {{ sujet }}</span>
+    <span><span class="tag">Profil</span> · {{ profil }}</span>
+    <span><span class="tag">Articles</span> · {{ nb_articles }}</span>
+  </div>
+
+  <div class="synthese">{{ resultat | safe }}</div>
+
+  <footer>
+    <span>PubMind v1.0</span>
+    <span>Powered by NCBI/PubMed</span>
+  </footer>
+
+</div>
+
+</body>
+</html>
