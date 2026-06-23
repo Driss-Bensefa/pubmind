@@ -129,7 +129,7 @@ pubmind/
 
 This project was built as part of a learning journey toward a career in bioinformatics and computational biology, targeting the US biotech industry (San Diego / Boston).
 
-The biological domain expertise — understanding why BRCA1 matters, what CRISPR-Cas9 does, how to read an abstract critically — is what makes PubMind different from a generic API wrapper.
+Prompts are built around real research workflows — distinguishing clinical trials from reviews, leveraging MeSH controlled vocabulary, separating methodology from conclusions, and flagging conflicts of interest from funding metadata. The 4 profiles reflect how different users actually interact with scientific literature, not just different verbosity levels.
 
 ---
 
