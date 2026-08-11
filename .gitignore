@@ -1,0 +1,16 @@
+#clé APu et variable  d'environement
+.env
+*.env
+
+
+#python
+__pycache__/
+*.pyc 
+*.pyo 
+
+# vs code
+.vscode/
+
+#windows
+Thumbs.db
+desktop.ini

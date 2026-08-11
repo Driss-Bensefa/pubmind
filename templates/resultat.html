@@ -24,7 +24,7 @@
   }
 
   .shell {
-    max-width: 760px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 48px 24px 100px;
   }
@@ -79,104 +79,190 @@
     color: var(--accent);
   }
 
-  /* Contenu de la synthèse — rendu HTML depuis markdown */
-  .synthese {
-    font-size: 16px;
-    line-height: 1.75;
+  /* Contexte */
+  .contexte {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    padding: 16px;
+    margin-bottom: 36px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ink);
   }
 
-  .synthese h1, .synthese h2, .synthese h3 {
+  /* CARDS GRID */
+  .solutions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 48px;
+  }
+
+  .card {
+    background: var(--accent-soft);
+    border: 1px solid var(--line);
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 4px;
+  }
+
+  .card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(74, 222, 128, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .card-rang {
+    font-size: 20px;
+    font-weight: 700;
     color: var(--accent);
-    margin: 28px 0 10px;
-    font-size: 15px;
-    font-family: 'Courier New', monospace;
+  }
+
+  .card-nom {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .card-description {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+
+  .card-footer {
+    font-size: 12px;
+    color: var(--ink-soft);
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  /* MODAL DÉTAIL (au clic) */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    overflow-y: auto;
+  }
+
+  .modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-content {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 32px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 24px;
+    cursor: pointer;
+  }
+
+  .modal-close:hover {
+    color: var(--accent);
+  }
+
+  .modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  .modal-section {
+    margin-bottom: 24px;
+  }
+
+  .modal-section-title {
+    font-size: 14px;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    font-weight: 700;
-  }
-
-  .synthese h4, .synthese h5, .synthese h6 {
-    color: var(--ink);
-    margin: 18px 0 8px;
-    font-size: 15px;
-    font-weight: 700;
-  }
-
-  .synthese p {
-    margin-bottom: 14px;
-  }
-
-  .synthese ul, .synthese ol {
-    margin: 10px 0 14px 22px;
-  }
-
-  .synthese li {
-    margin-bottom: 6px;
-  }
-
-  .synthese table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    font-size: 14px;
-  }
-
-  .synthese th, .synthese td {
-    border: 1px solid var(--line);
-    padding: 8px 12px;
-    text-align: left;
-    vertical-align: top;
-  }
-
-  .synthese th {
-    background: var(--accent-soft);
     color: var(--accent);
+    margin-bottom: 8px;
     font-family: 'Courier New', monospace;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
   }
 
-  .synthese strong {
+  .modal-section-content {
+    font-size: 15px;
+    line-height: 1.7;
     color: var(--ink);
-    font-weight: 700;
   }
 
-  .synthese em {
-    color: var(--ink-soft);
-    font-style: italic;
+  .modal-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
-  .synthese a {
+  .modal-list li {
+    margin-bottom: 8px;
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .modal-list li:before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+
+  .modal-source {
+    background: var(--accent-soft);
+    padding: 12px;
+    border-radius: 4px;
+    margin-top: 8px;
+    font-size: 13px;
+  }
+
+  .modal-source a {
     color: var(--accent);
     text-decoration: none;
   }
 
-  .synthese a:hover {
+  .modal-source a:hover {
     text-decoration: underline;
   }
 
-  .synthese hr {
-    border: none;
-    border-top: 1px solid var(--line);
-    margin: 24px 0;
-  }
-
-  .synthese code {
-    font-family: 'Courier New', monospace;
-    font-size: 13px;
+  /* Recommandation */
+  .recommandation {
     background: var(--accent-soft);
-    color: var(--accent);
-    padding: 2px 6px;
-    border-radius: 2px;
-  }
-
-  .synthese blockquote {
     border-left: 3px solid var(--accent);
-    padding-left: 16px;
-    color: var(--ink-soft);
-    margin: 14px 0;
-    font-style: italic;
+    padding: 16px;
+    margin-bottom: 36px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ink);
   }
 
   footer {
@@ -192,6 +278,7 @@
   @media (max-width: 560px) {
     .masthead { flex-direction: column; align-items: flex-start; gap: 12px; }
     .query-bar { flex-direction: column; gap: 4px; }
+    .solutions-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -210,7 +297,107 @@
     <span><span class="tag">Articles</span> · {{ nb_articles }}</span>
   </div>
 
-  <div class="synthese">{{ resultat | safe }}</div>
+  <!-- CONTEXTE -->
+  {% if contexte %}
+  <div class="contexte">
+    <strong>Contexte:</strong> {{ contexte }}
+  </div>
+  {% endif %}
+
+  <!-- SOLUTIONS EN CARDS -->
+  {% if solutions %}
+  <div class="solutions-grid">
+    {% for sol in solutions %}
+    <div class="card" onclick="openModal({{ loop.index0 }})">
+      <div class="card-header">
+        <span class="card-rang">{{ sol.rang }}</span>
+        <span class="card-nom">{{ sol.nom }}</span>
+      </div>
+      <div class="card-description">{{ sol.description }}</div>
+      <div class="card-footer">
+        Cliquer pour voir les détails
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- MODAL DÉTAIL -->
+  {% if solutions %}
+  {% for sol in solutions %}
+  <div class="modal" id="modal-{{ loop.index0 }}">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal({{ loop.index0 }})">✕</button>
+      
+      <div class="modal-title">{{ sol.rang }}. {{ sol.nom }}</div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">Description</div>
+        <div class="modal-section-content">{{ sol.description }}</div>
+      </div>
+
+      {% if sol.avantages %}
+      <div class="modal-section">
+        <div class="modal-section-title">✅ Avantages</div>
+        <ul class="modal-list">
+          {% for avantage in sol.avantages %}
+          <li>{{ avantage }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {% if sol.inconvenients %}
+      <div class="modal-section">
+        <div class="modal-section-title">❌ Inconvenients</div>
+        <ul class="modal-list">
+          {% for inconvenient in sol.inconvenients %}
+          <li>{{ inconvenient }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {% if sol.protocole_resume %}
+      <div class="modal-section">
+        <div class="modal-section-title">⚙️ Protocole</div>
+        <div class="modal-section-content">{{ sol.protocole_resume }}</div>
+      </div>
+      {% endif %}
+
+      {% if sol.materiel %}
+      <div class="modal-section">
+        <div class="modal-section-title">📦 Matériel</div>
+        <ul class="modal-list">
+          {% for mat in sol.materiel %}
+          <li>{{ mat }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {% if sol.sources %}
+      <div class="modal-section">
+        <div class="modal-section-title">📚 Sources</div>
+        {% for source in sol.sources %}
+        <div class="modal-source">
+          <strong>{{ source.auteurs }} ({{ source.year }})</strong><br>
+          DOI: <a href="https://doi.org/{{ source.doi }}" target="_blank">{{ source.doi }}</a>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <!-- RECOMMANDATION -->
+  {% if recommandation %}
+  <div class="recommandation">
+    <strong>💡 Recommandation:</strong> {{ recommandation }}
+  </div>
+  {% endif %}
 
   <footer>
     <span>PubMind v1.0</span>
@@ -218,6 +405,26 @@
   </footer>
 
 </div>
+
+<script>
+function openModal(index) {
+  document.getElementById('modal-' + index).classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(index) {
+  document.getElementById('modal-' + index).classList.remove('active');
+  document.body.style.overflow = 'auto';
+}
+
+// Fermer modal au clic sur le fond
+document.addEventListener('click', function(event) {
+  if (event.target.classList.contains('modal')) {
+    event.target.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+});
+</script>
 
 </body>
 </html>

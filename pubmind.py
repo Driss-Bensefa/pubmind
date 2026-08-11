@@ -46,10 +46,108 @@ def telecharger_articles(ids) :
     return contenu 
 
 
+def parser_articles(contenu):
+    morceaux = contenu.split("\nPMID-")   # découpe en morceaux
+    morceaux = morceaux[1:]               # jette le parasite
+
+    liste_articles = []                         # panier vide
+
+    for morceau in morceaux:              
+        lignes = morceau.split("\n")      
+        pmid = lignes[0].strip()          
+        titre = ""                        
+        dans_titre = False 
+        type_article = "ARTICLE"        
+        date = ""   
+        journal = ""   
+        doi = "" 
+        auteurs_liste = []
+        abstract = ""
+        dans_abstract = False
+
+        for ligne in lignes:    
+
+            if ligne.startswith("TI  -"): 
+                titre = ligne[6:]             
+                dans_titre = True
+            elif dans_titre and ligne.startswith("      "):
+                titre = titre + " " + ligne.strip()          
+            elif dans_titre :
+                dans_titre = False
+
+            if ligne.startswith("PT  - Review"):
+                type_article = "REVIEW"
+            
+            if ligne.startswith("DP  -"):
+                date = ligne[6:].split()[0]
+            
+            if ligne.startswith("TA  - "):
+                journal = ligne[6:]
+            
+            if ligne.startswith("LID -") and "[doi]" in ligne : 
+                doi = ligne[6:].replace(" [doi]","")
+            
+            if ligne.startswith("FAU -") : 
+                auteurs_liste.append(ligne[6:].strip())
+            
+            if ligne.startswith("AB  -") : 
+                abstract = ligne[6:]
+                dans_abstract = True 
+            elif dans_abstract and ligne.startswith("      "): 
+                abstract = abstract + " " + ligne.strip()
+            elif dans_abstract :
+                dans_abstract = False
+
+            
+        abstract = " ".join(abstract.split())    
+        auteurs = " & ".join(auteurs_liste[:2])
+        journal = " ".join(journal.split())
+        titre = " ".join(titre.split())   # ← nettoie les espaces multiples
+        
+        article = {
+            "pmid": pmid,
+            "titre": titre,
+            "type": type_article,
+            "annee": date,
+            "journal": journal,
+            "abstract" : abstract,
+            "doi": doi,
+            "auteurs": auteurs
+        }
+        liste_articles.append(article)
+      
+    return liste_articles 
+    
+
+
+
+
+def extraire_mots_cles(question):
+    """Demande à Claude les mots-clés importants d'une question"""
+    
+    message = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens= 100,
+        temperature=0,
+        messages=[
+            {
+                "role": "user",
+                "content": f"""Extrais les 3-5 mots-clés scientifiques importants de cette question:
+"{question}"
+
+Retourne UNIQUEMENT les mots-clés EN ANGLAIS séparés par des espaces, rien d'autre.
+Exemple: "CRISPR organoid differentiation hIPSC"""
+            }
+        ]
+    )
+    
+    return message.content[0].text.strip()
+
+
 
 def synthese_ia(contenu, sujet, profil="chercheur", nb_articles=10):
     print("Analyse IA en cours...", end="\r")
-    tokens_max = min(4000 + nb_articles * 150, 16000)
+    tokens_max = min(4000 + nb_articles * 200, 16000)
 
     mots_question = ["comment", "quel", "quels", "quelle", "quelles", "pourquoi", "est-ce que", "est-ce qu'"]
     est_question = profil == "chercheur" and any(mot in sujet.lower() for mot in mots_question)
@@ -151,147 +249,48 @@ Articles à analyser :
             prompt_veille = prompts_veille_agrege
 
 
-
-    prompt_chercheur_sujet = f"""Tu es un expert en bioinformatique et biologie moléculaire.
-Analyse ces articles sur : {sujet}
-
-Réponds EXACTEMENT dans ce format :
-
-🔬 SYNTHÈSE DU DOMAINE (4-5 lignes niveau expert)
-Synthèse approfondie des grandes tendances, consensus actuels et enjeux du domaine.
-
-🧬 GÈNES, PROTÉINES & VOIES MOLÉCULAIRES
-Pour chaque élément : nom, fonction, voie de signalisation, interactions clés, contexte pathologique si pertinent.
-
-⚙️ MÉTHODOLOGIES DÉTAILLÉES
-Pour chaque méthode :
-- Protocole step-by-step
-- Conditions expérimentales (température, durée, concentrations)
-- Matériel requis
-- Paramètres critiques à maîtriser
-
-📊 RÉSULTATS CLÉS & DONNÉES CHIFFRÉES
-Statistiques, valeurs numériques, p-values, fold-change, comparaisons quantitatives entre études.
-
-🔄 REPRODUCTIBILITÉ EN LABO
-- Ce qui est faisable dans un labo standard équipé
-- Ce qui nécessite du matériel spécialisé (listez lequel)
-- Points de vigilance pour la reproductibilité
-
-❓ QUESTIONS OUVERTES DU DOMAINE
-Ce qui n'est pas encore résolu, les contradictions dans la littérature, les lacunes méthodologiques.
-
-📚 ARTICLES CLÉS
-Pour chaque article important :
-- Auteurs — Journal — Année
-- 📍 Section clé : [Introduction / Methods / Results / Discussion]
-- "[Citation exacte de la phrase clé de l'article]"
-- 🔗 https://pubmed.ncbi.nlm.nih.gov/[PMID]
-
-💡 CONSEIL PRATIQUE EXPERT
-"Si tu veux reproduire/implémenter ceci, voilà par où commencer concrètement : [étapes, ressources, pièges à éviter]"
-
-Articles à analyser :
-{contenu}"""
-
     prompt_chercheur_question = f"""Tu es un expert en bioinformatique et biologie moléculaire.
-Un chercheur te pose cette question précise : {sujet}
 
-Analyse ces articles scientifiques et identifie les 3 meilleures solutions/réponses.
+Un chercheur pose cette question précise: {sujet}
 
-Réponds EXACTEMENT dans ce format :
+RÈGLES ABSOLUES:
+1. Chaque solution DOIT avoir des sources: DOI + auteurs + année
+2. Si tu ne peux pas sourcer → OMETS-LA
+3. Output JSON uniquement, pas de markdown
 
-🌍 CONTEXTE EXPERT (2-3 lignes)
-État de l'art actuel sur cette question précise, consensus et controverses dans la littérature.
+Réponds en JSON valide:
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🏆 TOP 3 SOLUTIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{{
+  "contexte": "2-3 lignes sur l'état de l'art pour cette question",
+  "solutions": [
+    {{
+      "rang": 1,
+      "nom": "Nom de la solution",
+      "description": "4-5 lignes",
+      "avantages": ["avantage 1", "avantage 2"],
+      "inconvenients": ["inconvenient 1"],
+      "sources": [{{"doi": "10.1038/...", "auteurs": "X et al.", "year": 2024}}]
+    }},
+    {{
+      "rang": 2,
+      "nom": "Solution 2",
+      "description": "...",
+      "avantages": [],
+      "inconvenients": [],
+      "sources": []
+    }}
+  ],
+  "recommandation": "Quelle solution choisir pour ce cas précis et pourquoi"
+}}
 
-🥇 SOLUTION 1 : [Nom de la solution/méthode]
-
-⭐ SCORE DE PERTINENCE : XX/100
-Justification du score :
-- [Critère 1 en lien direct avec la question] ✅ ou ❌
-- [Critère 2] ✅ ou ❌
-- [Critère 3] ✅ ou ❌
-
-📄 CONTEXTE DE L'ARTICLE
-"[Décris en 3-4 lignes comment cet article utilise cette approche, dans quel contexte expérimental, sur quel modèle, avec quels résultats principaux et données chiffrées]"
-
-📍 LOCALISATION DANS L'ARTICLE
-- Section : [Introduction / Methods / Results / Discussion]
-- Sous-section : [Nom exact de la sous-section]
-- "[Citation exacte de la phrase clé de l'article]"
-
-⚙️ PROTOCOLE DÉTAILLÉ
-- Étape 1 : [description précise]
-- Étape 2 : [description précise]
-- Paramètres critiques : [valeurs, concentrations, durées]
-- Matériel requis : [liste]
-
-✅ AVANTAGES
-- [Avantage 1 avec données chiffrées si disponibles]
-- [Avantage 2]
-- [Avantage 3]
-
-❌ INCONVÉNIENTS
-- [Inconvénient 1]
-- [Inconvénient 2]
-
-🎯 CONSEIL PERSONNALISÉ EXPERT
-"Pour ton cas précis — [reformule la question du chercheur] —
-[conseil concret et actionnable, adapté exactement à la question posée, basé sur les données de l'article]"
-
-🔗 [Auteurs] — [Journal] [Année]
-https://pubmed.ncbi.nlm.nih.gov/[PMID]
-
-───────────────────────────────
-
-🥈 SOLUTION 2 : [Nom de la solution/méthode]
-[Même structure que Solution 1]
-
-───────────────────────────────
-
-🥉 SOLUTION 3 : [Nom de la solution/méthode]
-[Même structure que Solution 1]
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚖️ COMPARAISON DES 3 SOLUTIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-| Critère          | Solution 1 | Solution 2 | Solution 3 |
-|------------------|------------|------------|------------|
-| Efficacité       |    ⭐⭐⭐    |    ⭐⭐      |    ⭐⭐⭐    |
-| Coût             |    💰💰     |    💰      |    💰💰💰   |
-| Difficulté       |    🔴       |    🟡      |    🟢      |
-| Délai résultat   |    3 sem    |    1 sem   |    2 sem   |
-| Reproductibilité |    ⭐⭐⭐    |    ⭐⭐      |    ⭐       |
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-💡 RECOMMANDATION FINALE EXPERTE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-"Pour ton cas précis — [reformule la question] —
-nous recommandons [Solution X] avec un score de XX/100 car :
-- [Raison 1 avec données chiffrées]
-- [Raison 2]
-- [Raison 3]
-
-Point de vigilance : [conseil important à ne pas oublier]"
-
-Articles à analyser :
+Articles à analyser:
 {contenu}"""
 
-   
-   
-   
-   
-   
-   
-   
    
     prompts = {
-        "chercheur": prompt_chercheur_question if est_question else prompt_chercheur_sujet,
+        "chercheur": prompt_chercheur_question,
+
+
 
      "etudiant": f"""Tu es un tuteur en bioinformatique et en biologie.
 Explique ces articles sur : {sujet} de façon pédagogique pour un étudiant en licence/master.
@@ -323,16 +322,6 @@ Une phrase simple et claire.
 
 Articles à analyser :
 {contenu}""",
-
-
-
-
-
-
-
-
-
-
 
 
      "reviewer": f"""Tu es un reviewer scientifique de haut niveau
@@ -420,14 +409,6 @@ Articles à analyser :
 
 
 
-
-
-
-
-
-
-
-
      "veille": prompt_veille,
     }
 
@@ -446,29 +427,6 @@ Articles à analyser :
     print(" " * 50, end="\r")
     return message.content[0].text
 
-def optimiser_requete(sujet):
-
-    print("Optimisation de la requête en cours...", end="\r")
-    message = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=100,
-        messages=[
-            {
-                "role": "user",
-                "content": "Tu es un expert en recherche bibliographique PubMed. Transforme ce texte en une requête PubMed optimisée en utilisant la syntaxe avancée : opérateurs booléens AND/OR/NOT, guillemets pour les expressions exactes, filtres de champs [gene], [author], [journal], [tiab], [pt]. Maximum 1 requête concise et précise, sans explication. Texte à transformer : " + sujet
-            }
-        ]
-    )
-
-    print(" " * 50, end="\r")
-    requete_optimisee = message.content[0].text.replace("```", "").strip()
-    print("Requête optimisée : " + requete_optimisee)
-    return requete_optimisee
-
-
-
-
-
 
 
 def lancer_recherche(sujet, nb_articles=5, profil="chercheur"):
@@ -477,14 +435,24 @@ def lancer_recherche(sujet, nb_articles=5, profil="chercheur"):
     print("profil : " + profil)
     print("================")
 
-    requete = optimiser_requete(sujet)
-    ids = rechercher_articles(requete, nb_articles)
+
+    # Extraire les mots-clés de la question
+    mots_cles = extraire_mots_cles(sujet)
+    print("Mots-clés extraits : " + mots_cles)
+
+    # Chercher avec les mots-clés
+    ids = rechercher_articles(mots_cles, nb_articles)
 
     if len(ids) == 0:
         return ("⚠️ Aucun article trouvé pour cette recherche.\n"
                 "Essaie une requête plus large ou reformule ta question.")
 
     contenu = telecharger_articles(ids)
+
+    print("\n=== DEBUG CONTENU ENVOYÉ À CLAUDE ===")
+    print(contenu[:9000])
+    print("=== FIN DEBUG CONTENU ===\n")
+
     synthese = synthese_ia(contenu, sujet, profil,nb_articles)
 
 
@@ -500,6 +468,10 @@ def lancer_recherche(sujet, nb_articles=5, profil="chercheur"):
 # Veille            --> ("CRISPR base editing cancer 2024", 20, profil="veille")
 
 if __name__ == "__main__":
-    lancer_recherche("CRISPR cancer 2024", 5, profil="veille")
-
-
+    ids = rechercher_articles("CRISPR organoid", 5)
+    contenu = telecharger_articles(ids)
+    articles = parser_articles(contenu)
+    for a in articles:
+        print(a["titre"])
+        print(a["abstract"][:200])
+        print("---")
