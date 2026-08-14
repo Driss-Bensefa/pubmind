@@ -5,28 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PubMind — Résultat</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
   :root {
     --ink: #e8e6e0;
     --ink-soft: #8a8a82;
-    --paper: #0d0d0c;
+    --paper: #060605;
     --line: #2a2a27;
     --accent: #4ade80;
     --accent-soft: #15201a;
+
+    --gold: #ffd23f;
+    --gold-soft: #332a08;
+    --gold-line: #ffd23f;
+
+    --green: #2ee06a;
+    --green-soft: #0c2417;
+    --green-line: #2ee06a;
+
+    --red: #ff5c5c;
+    --red-soft: #2a1010;
+    --red-line: #ff5c5c;
+
+    --dark: #55534d;
+    --dark-soft: #161613;
+    --dark-line: #45433d;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: var(--paper);
+    background-color: #060605;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(255,255,255,0.025) 1px, transparent 0);
+    background-size: 22px 22px;
     color: var(--ink);
-    font-family: 'Iowan Old Style', 'Georgia', serif;
+    font-family: 'Source Serif 4', Georgia, serif;
     min-height: 100vh;
   }
 
   .shell {
-    max-width: 900px;
+    max-width: 960px;
     margin: 0 auto;
-    padding: 48px 24px 100px;
+    padding: 0 24px 100px;
   }
 
   .masthead {
@@ -34,8 +55,12 @@
     align-items: center;
     justify-content: space-between;
     border-bottom: 2px solid var(--ink);
-    padding-bottom: 18px;
-    margin-bottom: 8px;
+    padding: 20px 24px;
+    margin: 0 -24px 8px;
+    position: sticky;
+    top: 0;
+    z-index: 500;
+    background: var(--paper);
   }
 
   .masthead .mark {
@@ -49,27 +74,29 @@
   }
 
   .masthead a {
-    font-family: 'Courier New', monospace;
+    font-family: 'IBM Plex Mono', monospace;
     font-size: 12px;
-    color: var(--ink-soft);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--paper);
+    background: var(--accent);
     text-decoration: none;
-    border: 1px solid var(--line);
-    padding: 8px 14px;
-    transition: border-color 0.15s, color 0.15s;
+    padding: 9px 16px;
+    transition: background 0.15s;
   }
 
   .masthead a:hover {
-    border-color: var(--accent);
-    color: var(--accent);
+    background: #6ee89c;
   }
 
   .query-bar {
-    font-family: 'Courier New', monospace;
+    font-family: 'IBM Plex Mono', monospace;
     font-size: 12px;
     color: var(--ink-soft);
-    padding: 14px 0 36px;
+    padding: 14px 0 20px;
     border-bottom: 1px solid var(--line);
-    margin-bottom: 36px;
+    margin-bottom: 24px;
     display: flex;
     gap: 18px;
     flex-wrap: wrap;
@@ -79,7 +106,48 @@
     color: var(--accent);
   }
 
-  /* Contexte */
+  .intro-block {
+    background: var(--accent-soft);
+    border: 1px solid var(--line);
+    padding: 18px 20px;
+    margin-bottom: 32px;
+  }
+
+  .intro-text {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ink);
+    margin-bottom: 14px;
+  }
+
+  .intro-text strong {
+    color: var(--accent);
+  }
+
+  .legende {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+  }
+
+  .legende-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .legende-dot {
+    width: 9px;
+    height: 9px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
   .contexte {
     background: var(--accent-soft);
     border-left: 3px solid var(--accent);
@@ -90,63 +158,118 @@
     color: var(--ink);
   }
 
-  /* CARDS GRID */
   .solutions-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 18px;
     margin-bottom: 48px;
   }
 
   .card {
     background: var(--accent-soft);
     border: 1px solid var(--line);
+    border-left: 5px solid var(--line);
     padding: 20px;
     cursor: pointer;
-    transition: all 0.2s;
-    border-radius: 4px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
 
   .card:hover {
-    border-color: var(--accent);
-    box-shadow: 0 4px 12px rgba(74, 222, 128, 0.15);
-    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+    transform: translateY(-3px);
+  }
+
+  .card.pertinence-haute {
+    border-left-color: var(--gold-line);
+    background: var(--gold-soft);
+  }
+  .card.pertinence-moyenne {
+    border-left-color: var(--green-line);
+    background: var(--green-soft);
+  }
+  .card.pertinence-faible {
+    border-left-color: var(--red-line);
+    background: var(--red-soft);
+  }
+  .card.pertinence-hors_sujet {
+    border-left-color: var(--dark-line);
+    background: var(--dark-soft);
+    opacity: 0.6;
   }
 
   .card-header {
     display: flex;
-    align-items: baseline;
+    align-items: center;
+    justify-content: space-between;
     gap: 10px;
     margin-bottom: 12px;
   }
 
-  .card-rang {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--accent);
+  .card-type {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border: 1px solid var(--line);
+    padding: 2px 8px;
   }
+
+  .card-pertinence-top {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+  }
+
+  .card-pertinence-top.pertinence-haute { color: #1a1502; background: var(--gold); }
+  .card-pertinence-top.pertinence-moyenne { color: #041a0d; background: var(--green); }
+  .card-pertinence-top.pertinence-faible { color: #1a0505; background: var(--red); }
+  .card-pertinence-top.pertinence-hors_sujet { color: var(--ink-soft); background: transparent; border: 1px solid var(--dark-line); }
 
   .card-nom {
     font-size: 16px;
     font-weight: 700;
     color: var(--ink);
+    line-height: 1.4;
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .card-description {
     font-size: 14px;
     line-height: 1.6;
     color: var(--ink-soft);
-    margin-bottom: 12px;
+    margin-bottom: 14px;
+    flex-grow: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .card-footer {
-    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     color: var(--ink-soft);
     padding-top: 12px;
     border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
   }
 
-  /* MODAL DÉTAIL (au clic) */
   .modal {
     display: none;
     position: fixed;
@@ -154,7 +277,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.82);
     z-index: 1000;
     overflow-y: auto;
   }
@@ -169,7 +292,7 @@
     background: var(--paper);
     border: 1px solid var(--line);
     padding: 32px;
-    max-width: 600px;
+    max-width: 620px;
     width: 90%;
     max-height: 90vh;
     overflow-y: auto;
@@ -181,21 +304,58 @@
     top: 12px;
     right: 12px;
     background: none;
-    border: none;
+    border: 1px solid var(--line);
+    width: 28px;
+    height: 28px;
     color: var(--ink-soft);
-    font-size: 24px;
+    font-size: 16px;
     cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
   }
 
   .modal-close:hover {
     color: var(--accent);
+    border-color: var(--accent);
   }
 
-  .modal-title {
-    font-size: 20px;
-    font-weight: 700;
+  .modal-badges {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .modal-type {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 3px 9px;
+  }
+
+  .modal-pertinence {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 9px;
+  }
+
+  .modal-pertinence.pertinence-haute { color: #1a1502; background: var(--gold); }
+  .modal-pertinence.pertinence-moyenne { color: #041a0d; background: var(--green); }
+  .modal-pertinence.pertinence-faible { color: #1a0505; background: var(--red); }
+  .modal-pertinence.pertinence-hors_sujet { color: var(--ink-soft); background: transparent; border: 1px solid var(--dark-line); }
+
+  .modal-title {
+    font-size: 21px;
+    font-weight: 700;
+    color: var(--ink);
     margin-bottom: 20px;
+    line-height: 1.4;
   }
 
   .modal-section {
@@ -209,7 +369,7 @@
     letter-spacing: 0.05em;
     color: var(--accent);
     margin-bottom: 8px;
-    font-family: 'Courier New', monospace;
+    font-family: 'IBM Plex Mono', monospace;
   }
 
   .modal-section-content {
@@ -240,9 +400,10 @@
   .modal-source {
     background: var(--accent-soft);
     padding: 12px;
-    border-radius: 4px;
     margin-top: 8px;
-    font-size: 13px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
   }
 
   .modal-source a {
@@ -254,7 +415,6 @@
     text-decoration: underline;
   }
 
-  /* Recommandation */
   .recommandation {
     background: var(--accent-soft);
     border-left: 3px solid var(--accent);
@@ -265,11 +425,21 @@
     color: var(--ink);
   }
 
+  .empty-state {
+    color: var(--ink-soft);
+    font-size: 15px;
+    padding: 40px 0;
+    text-align: center;
+  }
+
   footer {
     margin-top: 64px;
     padding-top: 20px;
     border-top: 1px solid var(--line);
-    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     color: var(--ink-soft);
     display: flex;
     justify-content: space-between;
@@ -279,6 +449,7 @@
     .masthead { flex-direction: column; align-items: flex-start; gap: 12px; }
     .query-bar { flex-direction: column; gap: 4px; }
     .solutions-grid { grid-template-columns: 1fr; }
+    .legende { gap: 12px; }
   }
 </style>
 </head>
@@ -294,109 +465,172 @@
   <div class="query-bar">
     <span><span class="tag">Sujet</span> · {{ sujet }}</span>
     <span><span class="tag">Profil</span> · {{ profil }}</span>
-    <span><span class="tag">Articles</span> · {{ nb_articles }}</span>
+    <span><span class="tag">Articles</span> · {{ cards|length if profil == "chercheur" and cards else nb_articles }}</span>
   </div>
 
-  <!-- CONTEXTE -->
-  {% if contexte %}
-  <div class="contexte">
-    <strong>Contexte:</strong> {{ contexte }}
-  </div>
-  {% endif %}
+  {% if profil == "chercheur" %}
 
-  <!-- SOLUTIONS EN CARDS -->
-  {% if solutions %}
-  <div class="solutions-grid">
-    {% for sol in solutions %}
-    <div class="card" onclick="openModal({{ loop.index0 }})">
-      <div class="card-header">
-        <span class="card-rang">{{ sol.rang }}</span>
-        <span class="card-nom">{{ sol.nom }}</span>
+    {% if cards %}
+
+    <div class="intro-block">
+      <div class="intro-text">
+        <strong>{{ cards|length }} article{{ 's' if cards|length > 1 else '' }}</strong> analysé{{ 's' if cards|length > 1 else '' }} et classé{{ 's' if cards|length > 1 else '' }} par pertinence pour répondre à votre question.
       </div>
-      <div class="card-description">{{ sol.description }}</div>
-      <div class="card-footer">
-        Cliquer pour voir les détails
+      <div class="legende">
+        <span class="legende-item"><span class="legende-dot" style="background: var(--gold);"></span> Haute pertinence</span>
+        <span class="legende-item"><span class="legende-dot" style="background: var(--green);"></span> Moyenne</span>
+        <span class="legende-item"><span class="legende-dot" style="background: var(--red);"></span> Faible</span>
+        <span class="legende-item"><span class="legende-dot" style="background: var(--dark);"></span> Hors sujet</span>
+      </div>
+    </div>
+
+    <div class="solutions-grid">
+      {% for card in cards %}
+      <div class="card pertinence-{{ card.pertinence_niveau }}" onclick="openModal({{ loop.index0 }})">
+        <div class="card-header">
+          <span class="card-type">{{ card.type }}</span>
+          <span class="card-pertinence-top pertinence-{{ card.pertinence_niveau }}">{{ card.pertinence_niveau }}</span>
+        </div>
+        <div class="card-nom">{{ card.titre }}</div>
+        <div class="card-description">{{ card.resume | truncate(160) }}</div>
+        <div class="card-footer">
+          <span>Détails →</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% for card in cards %}
+    <div class="modal" id="modal-{{ loop.index0 }}">
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeModal({{ loop.index0 }})">✕</button>
+
+        <div class="modal-badges">
+          <div class="modal-type">{{ card.type }}</div>
+          <div class="modal-pertinence pertinence-{{ card.pertinence_niveau }}">{{ card.pertinence_niveau }}</div>
+        </div>
+        <div class="modal-title">{{ card.titre }}</div>
+
+        <div class="modal-section">
+          <div class="modal-section-title">Résumé</div>
+          <div class="modal-section-content">{{ card.resume }}</div>
+        </div>
+
+        {% if card.resultats_cles %}
+        <div class="modal-section">
+          <div class="modal-section-title">Résultats clés</div>
+          <ul class="modal-list">
+            {% for resultat in card.resultats_cles %}
+            <li>{{ resultat }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <div class="modal-section">
+          <div class="modal-section-title">Pourquoi ce niveau de pertinence</div>
+          <div class="modal-section-content">{{ card.pertinence_texte }}</div>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-source">
+            <strong>{{ card.auteurs }}</strong> — {{ card.annee }}<br>
+            {{ card.journal }}<br>
+            {% if card.doi %}
+            DOI: <a href="https://doi.org/{{ card.doi }}" target="_blank">{{ card.doi }}</a><br>
+            {% endif %}
+            <a href="https://pubmed.ncbi.nlm.nih.gov/{{ card.pmid }}" target="_blank">Voir sur PubMed →</a>
+          </div>
+        </div>
+
       </div>
     </div>
     {% endfor %}
-  </div>
-  {% endif %}
 
-  <!-- MODAL DÉTAIL -->
-  {% if solutions %}
-  {% for sol in solutions %}
-  <div class="modal" id="modal-{{ loop.index0 }}">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeModal({{ loop.index0 }})">✕</button>
-      
-      <div class="modal-title">{{ sol.rang }}. {{ sol.nom }}</div>
+    {% else %}
+    <div class="empty-state">Aucun résultat pour cette recherche.</div>
+    {% endif %}
 
-      <div class="modal-section">
-        <div class="modal-section-title">Description</div>
-        <div class="modal-section-content">{{ sol.description }}</div>
-      </div>
+  {% else %}
 
-      {% if sol.avantages %}
-      <div class="modal-section">
-        <div class="modal-section-title">✅ Avantages</div>
-        <ul class="modal-list">
-          {% for avantage in sol.avantages %}
-          <li>{{ avantage }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-      {% endif %}
-
-      {% if sol.inconvenients %}
-      <div class="modal-section">
-        <div class="modal-section-title">❌ Inconvenients</div>
-        <ul class="modal-list">
-          {% for inconvenient in sol.inconvenients %}
-          <li>{{ inconvenient }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-      {% endif %}
-
-      {% if sol.protocole_resume %}
-      <div class="modal-section">
-        <div class="modal-section-title">⚙️ Protocole</div>
-        <div class="modal-section-content">{{ sol.protocole_resume }}</div>
-      </div>
-      {% endif %}
-
-      {% if sol.materiel %}
-      <div class="modal-section">
-        <div class="modal-section-title">📦 Matériel</div>
-        <ul class="modal-list">
-          {% for mat in sol.materiel %}
-          <li>{{ mat }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-      {% endif %}
-
-      {% if sol.sources %}
-      <div class="modal-section">
-        <div class="modal-section-title">📚 Sources</div>
-        {% for source in sol.sources %}
-        <div class="modal-source">
-          <strong>{{ source.auteurs }} ({{ source.year }})</strong><br>
-          DOI: <a href="https://doi.org/{{ source.doi }}" target="_blank">{{ source.doi }}</a>
-        </div>
-        {% endfor %}
-      </div>
-      {% endif %}
+    {% if contexte %}
+    <div class="contexte">
+      <strong>Contexte:</strong> {{ contexte }}
     </div>
-  </div>
-  {% endfor %}
-  {% endif %}
+    {% endif %}
 
-  <!-- RECOMMANDATION -->
-  {% if recommandation %}
-  <div class="recommandation">
-    <strong>💡 Recommandation:</strong> {{ recommandation }}
-  </div>
+    {% if solutions %}
+    <div class="solutions-grid">
+      {% for sol in solutions %}
+      <div class="card" onclick="openModal({{ loop.index0 }})">
+        <div class="card-header">
+          <span class="card-type">{{ sol.rang }}</span>
+        </div>
+        <div class="card-nom">{{ sol.nom }}</div>
+        <div class="card-description">{{ sol.description }}</div>
+        <div class="card-footer">
+          <span>Détails →</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% for sol in solutions %}
+    <div class="modal" id="modal-{{ loop.index0 }}">
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeModal({{ loop.index0 }})">✕</button>
+
+        <div class="modal-title">{{ sol.rang }}. {{ sol.nom }}</div>
+
+        <div class="modal-section">
+          <div class="modal-section-title">Description</div>
+          <div class="modal-section-content">{{ sol.description }}</div>
+        </div>
+
+        {% if sol.avantages %}
+        <div class="modal-section">
+          <div class="modal-section-title">Avantages</div>
+          <ul class="modal-list">
+            {% for avantage in sol.avantages %}
+            <li>{{ avantage }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        {% if sol.inconvenients %}
+        <div class="modal-section">
+          <div class="modal-section-title">Inconvenients</div>
+          <ul class="modal-list">
+            {% for inconvenient in sol.inconvenients %}
+            <li>{{ inconvenient }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        {% if sol.sources %}
+        <div class="modal-section">
+          <div class="modal-section-title">Sources</div>
+          {% for source in sol.sources %}
+          <div class="modal-source">
+            <strong>{{ source.auteurs }} ({{ source.year }})</strong><br>
+            DOI: <a href="https://doi.org/{{ source.doi }}" target="_blank">{{ source.doi }}</a>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if recommandation %}
+    <div class="recommandation">
+      <strong>💡 Recommandation:</strong> {{ recommandation }}
+    </div>
+    {% endif %}
+
   {% endif %}
 
   <footer>
@@ -417,7 +651,6 @@ function closeModal(index) {
   document.body.style.overflow = 'auto';
 }
 
-// Fermer modal au clic sur le fond
 document.addEventListener('click', function(event) {
   if (event.target.classList.contains('modal')) {
     event.target.classList.remove('active');

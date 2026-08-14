@@ -5,7 +5,9 @@
 
 from Bio import Entrez
 import os
+import json
 from anthropic import Anthropic
+
 
 client = Anthropic()
 
@@ -120,28 +122,79 @@ def parser_articles(contenu):
     
 
 
-
-
 def extraire_mots_cles(question):
     """Demande à Claude les mots-clés importants d'une question"""
     
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens= 100,
+        max_tokens=100,
         temperature=0,
         messages=[
             {
                 "role": "user",
-                "content": f"""Extrais les 3-5 mots-clés scientifiques importants de cette question:
+                "content": f"""Extrais MAXIMUM 4 mots-clés scientifiques ESSENTIELS de cette question:
 "{question}"
 
-Retourne UNIQUEMENT les mots-clés EN ANGLAIS séparés par des espaces, rien d'autre.
-Exemple: "CRISPR organoid differentiation hIPSC"""
+Choisis uniquement les concepts les plus importants. Retourne UNIQUEMENT les mots-clés EN ANGLAIS séparés par des espaces, rien d'autre.
+Exemple: "CRISPR organoid differentiation"""
             }
         ]
     )
     
     return message.content[0].text.strip()
+
+
+
+
+
+
+
+
+
+def synthese_article(article, sujet):
+    """Génère un résumé pour UN article, basé uniquement sur son abstract"""
+    
+    prompt = f"""Tu es un expert en bioinformatique et biologie moléculaire.
+
+Un chercheur pose cette question: {sujet}
+
+Voici UN SEUL article scientifique à analyser. Réponds en JSON strict.
+
+RÈGLES ABSOLUES:
+1. Le résumé doit provenir UNIQUEMENT de cet abstract, développé (contexte, méthode, résultat principal, conclusion)
+2. Les résultats clés chiffrés (pourcentages, durées, taux...) doivent être des valeurs EXACTES présentes dans l'abstract, jamais calculées ou déduites
+3. Si aucun résultat chiffré n'est présent, laisse la liste vide
+4. N'invente RIEN qui ne figure pas dans cet abstract
+
+Titre de l'article: {article['titre']}
+Abstract: {article['abstract']}
+
+Réponds en JSON valide, uniquement:
+{{
+  "resume": "résumé développé basé uniquement sur l'abstract",
+  "resultats_cles": ["résultat chiffré 1 si présent"],
+  "pertinence_texte": "1-2 lignes sur pourquoi cet article répond ou non à la question du chercheur",
+  "pertinence_niveau": "haute, moyenne, faible ou hors_sujet - choisis EXACTEMENT un de ces 4 mots"
+}}"""
+
+    message = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=850,
+        temperature=0,
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+    )
+
+    return message.content[0].text
+
+
+
+
+
 
 
 
@@ -435,28 +488,45 @@ def lancer_recherche(sujet, nb_articles=5, profil="chercheur"):
     print("profil : " + profil)
     print("================")
 
-
-    # Extraire les mots-clés de la question
     mots_cles = extraire_mots_cles(sujet)
     print("Mots-clés extraits : " + mots_cles)
 
-    # Chercher avec les mots-clés
     ids = rechercher_articles(mots_cles, nb_articles)
-
     if len(ids) == 0:
         return ("⚠️ Aucun article trouvé pour cette recherche.\n"
                 "Essaie une requête plus large ou reformule ta question.")
 
     contenu = telecharger_articles(ids)
+    articles = parser_articles(contenu)
 
-    print("\n=== DEBUG CONTENU ENVOYÉ À CLAUDE ===")
-    print(contenu[:9000])
-    print("=== FIN DEBUG CONTENU ===\n")
+    if profil == "chercheur":
+        cards = []
+        for article in articles:
+            resultat_brut = synthese_article(article, sujet)
+            resultat_propre = resultat_brut.replace("```json", "").replace("```", "").strip()
 
-    synthese = synthese_ia(contenu, sujet, profil,nb_articles)
+            try:
+                data = json.loads(resultat_propre)
+                article["resume"] = data["resume"]
+                article["resultats_cles"] = data["resultats_cles"]
+                article["pertinence_texte"] = data["pertinence_texte"]
+                article["pertinence_niveau"] = data["pertinence_niveau"]
+            except json.JSONDecodeError:
+                article["resume"] = "Erreur de traitement pour cet article"
+                article["resultats_cles"] = []
+                article["pertinence_texte"] = ""
+                article["pertinence_niveau"] = "faible"
+            cards.append(article)
 
+        ordre_pertinence = {"haute": 1, "moyenne": 2, "faible": 3, "hors_sujet": 4}
+        cards.sort(key=lambda c: ordre_pertinence.get(c["pertinence_niveau"], 5))
 
-    return(synthese)
+        return cards
+        
+    else:
+        # Ancien flux pour les autres profils (étudiant, veille) — non encore migré
+        synthese = synthese_ia(contenu, sujet, profil, nb_articles)
+        return synthese
     
 
 #different type de profil ( reponse adaptée en fonction du profil)
@@ -467,11 +537,12 @@ def lancer_recherche(sujet, nb_articles=5, profil="chercheur"):
 # Question précise  --> ("comment optimiser le CRISPR dans les cellules souches ?", 10, profil="chercheur")
 # Veille            --> ("CRISPR base editing cancer 2024", 20, profil="veille")
 
+
+
 if __name__ == "__main__":
-    ids = rechercher_articles("CRISPR organoid", 5)
-    contenu = telecharger_articles(ids)
-    articles = parser_articles(contenu)
-    for a in articles:
-        print(a["titre"])
-        print(a["abstract"][:200])
+    resultat = lancer_recherche("comment optimiser CRISPR dans les organoids", 5, "chercheur")
+    print("Nombre de cards :", len(resultat))
+    for card in resultat:
+        print(card["titre"])
+        print("Pertinence :", card["pertinence_texte"], "-", card["pertinence_niveau"])
         print("---")
