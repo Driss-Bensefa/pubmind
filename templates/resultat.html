@@ -10,7 +10,7 @@
   :root {
     --ink: #e8e6e0;
     --ink-soft: #8a8a82;
-    --paper: #060605;
+    --paper: #0a0a09;
     --line: #2a2a27;
     --accent: #4ade80;
     --accent-soft: #15201a;
@@ -34,11 +34,21 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in { animation: fade-up 0.6s ease both; }
+  .fade-in-1 { animation-delay: 0.05s; }
+  .fade-in-2 { animation-delay: 0.15s; }
+  .fade-in-3 { animation-delay: 0.25s; }
+
   body {
-    background-color: #060605;
+    background-color: #0a0a09;
     background-image:
-      radial-gradient(circle at 1px 1px, rgba(255,255,255,0.025) 1px, transparent 0);
-    background-size: 22px 22px;
+      radial-gradient(circle at 1px 1px, rgba(200,200,195,0.09) 1px, transparent 0);
+    background-size: 16px 16px;
     color: var(--ink);
     font-family: 'Source Serif 4', Georgia, serif;
     min-height: 100vh;
@@ -83,11 +93,31 @@
     background: var(--accent);
     text-decoration: none;
     padding: 9px 16px;
-    transition: background 0.15s;
+    transition: background 0.15s, transform 0.15s, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+  }
+
+  .masthead a::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .masthead a:hover::before {
+    left: 100%;
   }
 
   .masthead a:hover {
     background: #6ee89c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(74, 222, 128, 0.25);
   }
 
   .query-bar {
@@ -111,6 +141,12 @@
     border: 1px solid var(--line);
     padding: 18px 20px;
     margin-bottom: 32px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    transition: box-shadow 0.3s ease;
+  }
+
+  .intro-block:hover {
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(74, 222, 128, 0.06);
   }
 
   .intro-text {
@@ -139,6 +175,11 @@
     display: flex;
     align-items: center;
     gap: 7px;
+    transition: color 0.2s ease;
+  }
+
+  .legende-item:hover {
+    color: var(--ink);
   }
 
   .legende-dot {
@@ -146,6 +187,11 @@
     height: 9px;
     display: inline-block;
     flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+
+  .legende-item:hover .legende-dot {
+    transform: scale(1.3);
   }
 
   .contexte {
@@ -158,6 +204,60 @@
     color: var(--ink);
   }
 
+  .veille-section {
+    margin-bottom: 36px;
+  }
+
+  .veille-section-titre {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 12px;
+    font-family: 'Source Serif 4', Georgia, serif;
+  }
+
+  .veille-section-texte {
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--ink);
+  }
+
+  .veille-notables-titre {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 48px 0 20px;
+    padding-top: 32px;
+    border-top: 2px solid var(--ink);
+    color: var(--ink);
+  }
+
+  .veille-legende {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+  }
+
+  .card.classification-innovant {
+    border-left-color: var(--gold-line);
+    background: var(--gold-soft);
+  }
+  .card.classification-courant {
+    border-left-color: var(--green-line);
+    background: var(--green-soft);
+  }
+
+  .card-classification-top.classification-innovant { color: #1a1502; background: var(--gold); }
+  .card-classification-top.classification-courant { color: #041a0d; background: var(--green); }
+
+  .modal-pertinence.classification-innovant { color: #1a1502; background: var(--gold); }
+  .modal-pertinence.classification-courant { color: #041a0d; background: var(--green); }
+
   .solutions-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -168,18 +268,21 @@
   .card {
     background: var(--accent-soft);
     border: 1px solid var(--line);
-    border-left: 5px solid var(--line);
+    border-left: 6px solid var(--line);
     padding: 20px;
     cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;
     flex-direction: column;
     height: 100%;
+    animation: fade-up 0.5s ease both;
+    will-change: transform;
   }
 
   .card:hover {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-    transform: translateY(-3px);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), 0 6px 16px rgba(0, 0, 0, 0.4);
+    transform: translateY(-8px);
   }
 
   .card.pertinence-haute {
@@ -220,6 +323,15 @@
   }
 
   .card-pertinence-top {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+  }
+
+  .card-classification-top {
     font-size: 10px;
     font-weight: 700;
     font-family: 'IBM Plex Mono', monospace;
@@ -286,6 +398,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    animation: modal-bg-in 0.25s ease;
+  }
+
+  @keyframes modal-bg-in {
+    from { background: rgba(0, 0, 0, 0); }
+    to { background: rgba(0, 0, 0, 0.82); }
+  }
+
+  .modal.active .modal-content {
+    animation: modal-in 0.3s cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+
+  @keyframes modal-in {
+    from { opacity: 0; transform: translateY(24px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
 
   .modal-content {
@@ -297,6 +424,7 @@
     max-height: 90vh;
     overflow-y: auto;
     position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
   }
 
   .modal-close {
@@ -311,11 +439,13 @@
     font-size: 16px;
     cursor: pointer;
     font-family: 'IBM Plex Mono', monospace;
+    transition: color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
   }
 
   .modal-close:hover {
     color: var(--accent);
     border-color: var(--accent);
+    transform: rotate(90deg);
   }
 
   .modal-badges {
@@ -457,12 +587,12 @@
 
 <div class="shell">
 
-  <div class="masthead">
+  <div class="masthead fade-in">
     <div class="mark">Pub<span>Mind</span></div>
     <a href="/">← Nouvelle recherche</a>
   </div>
 
-  <div class="query-bar">
+  <div class="query-bar fade-in fade-in-1">
     <span><span class="tag">Sujet</span> · {{ sujet }}</span>
     <span><span class="tag">Profil</span> · {{ profil }}</span>
     <span><span class="tag">Articles</span> · {{ cards|length if profil == "chercheur" and cards else nb_articles }}</span>
@@ -472,7 +602,7 @@
 
     {% if cards %}
 
-    <div class="intro-block">
+    <div class="intro-block fade-in fade-in-2">
       <div class="intro-text">
         <strong>{{ cards|length }} article{{ 's' if cards|length > 1 else '' }}</strong> analysé{{ 's' if cards|length > 1 else '' }} et classé{{ 's' if cards|length > 1 else '' }} par pertinence pour répondre à votre question.
       </div>
@@ -486,7 +616,7 @@
 
     <div class="solutions-grid">
       {% for card in cards %}
-      <div class="card pertinence-{{ card.pertinence_niveau }}" onclick="openModal({{ loop.index0 }})">
+      <div class="card pertinence-{{ card.pertinence_niveau }}" style="animation-delay: {{ (loop.index0 * 0.06)|round(2) }}s" onclick="openModal({{ loop.index0 }})">
         <div class="card-header">
           <span class="card-type">{{ card.type }}</span>
           <span class="card-pertinence-top pertinence-{{ card.pertinence_niveau }}">{{ card.pertinence_niveau }}</span>
@@ -551,6 +681,78 @@
     <div class="empty-state">Aucun résultat pour cette recherche.</div>
     {% endif %}
 
+  {% elif profil == "veille" %}
+
+    {% if intro_veille %}
+    <div class="intro-block fade-in fade-in-2">
+      <div class="intro-text">{{ intro_veille }}</div>
+    </div>
+    {% endif %}
+
+    {% for section in sections_veille %}
+    <div class="veille-section fade-in">
+      <div class="veille-section-titre">{{ section.titre }}</div>
+      <div class="veille-section-texte">{{ section.texte }}</div>
+    </div>
+    {% endfor %}
+
+    {% if articles_notables %}
+
+    <div class="veille-notables-titre">Articles notables</div>
+
+    <div class="veille-legende">
+      <span class="legende-item"><span class="legende-dot" style="background: var(--gold);"></span> Innovant / rare</span>
+      <span class="legende-item"><span class="legende-dot" style="background: var(--green);"></span> Courant / représentatif</span>
+    </div>
+
+    <div class="solutions-grid">
+      {% for notable in articles_notables %}
+      <div class="card classification-{{ notable.classification }}" style="animation-delay: {{ (loop.index0 * 0.06)|round(2) }}s" onclick="openModal({{ loop.index0 }})">
+        <div class="card-header">
+          <span class="card-type">{{ notable.article.type }}</span>
+          <span class="card-classification-top classification-{{ notable.classification }}">{{ notable.classification }}</span>
+        </div>
+        <div class="card-nom">{{ notable.article.titre }}</div>
+        <div class="card-description">{{ notable.raison }}</div>
+        <div class="card-footer">
+          <span>Détails →</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% for notable in articles_notables %}
+    <div class="modal" id="modal-{{ loop.index0 }}">
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeModal({{ loop.index0 }})">✕</button>
+
+        <div class="modal-badges">
+          <div class="modal-type">{{ notable.article.type }}</div>
+          <div class="modal-pertinence classification-{{ notable.classification }}">{{ notable.classification }}</div>
+        </div>
+        <div class="modal-title">{{ notable.article.titre }}</div>
+
+        <div class="modal-section">
+          <div class="modal-section-title">Pourquoi cet article se distingue</div>
+          <div class="modal-section-content">{{ notable.raison }}</div>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-source">
+            <strong>{{ notable.article.auteurs }}</strong> — {{ notable.article.annee }}<br>
+            {{ notable.article.journal }}<br>
+            {% if notable.article.doi %}
+            DOI: <a href="https://doi.org/{{ notable.article.doi }}" target="_blank">{{ notable.article.doi }}</a><br>
+            {% endif %}
+            <a href="https://pubmed.ncbi.nlm.nih.gov/{{ notable.article.pmid }}" target="_blank">Voir sur PubMed →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+    {% endif %}
+
   {% else %}
 
     {% if contexte %}
@@ -562,7 +764,7 @@
     {% if solutions %}
     <div class="solutions-grid">
       {% for sol in solutions %}
-      <div class="card" onclick="openModal({{ loop.index0 }})">
+      <div class="card" style="animation-delay: {{ (loop.index0 * 0.06)|round(2) }}s" onclick="openModal({{ loop.index0 }})">
         <div class="card-header">
           <span class="card-type">{{ sol.rang }}</span>
         </div>
@@ -633,7 +835,7 @@
 
   {% endif %}
 
-  <footer>
+  <footer class="fade-in">
     <span>PubMind v1.0</span>
     <span>Powered by NCBI/PubMed</span>
   </footer>

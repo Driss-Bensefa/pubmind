@@ -14,9 +14,16 @@ client = Anthropic()
 # Ton email pour identifier tes requêtes auprès du NCBI
 Entrez.email = "driss.bensefa@gmail.com"
 
-def rechercher_articles(sujet, nb_articles=5):
+def rechercher_articles(sujet, nb_articles=5, tri="pertinence"):
     print("recherche en cours pour : " + sujet, end="\r")
-    handle = Entrez.esearch(db="pubmed", term= sujet, retmax=nb_articles)
+    
+    if tri == "date":
+        handle = Entrez.esearch(db="pubmed", term=sujet, retmax=nb_articles, sort="pub date")
+    else:
+        handle = Entrez.esearch(db="pubmed", term=sujet, retmax=nb_articles)
+    
+
+    
     resultats = Entrez.read(handle)
     handle.close()
     print(" " * 50, end="\r")
@@ -24,7 +31,7 @@ def rechercher_articles(sujet, nb_articles=5):
     ids = resultats["IdList"]
     print("Articles trouvés : " + str(len(ids)))
 
-    return ids 
+    return ids
 
 
 
@@ -81,7 +88,11 @@ def parser_articles(contenu):
                 type_article = "REVIEW"
             
             if ligne.startswith("DP  -"):
-                date = ligne[6:].split()[0]
+                parties_date = ligne[6:].split()
+                if len(parties_date) >= 2:
+                    date = parties_date[0] + " " + parties_date[1]
+                else:
+                    date = parties_date[0]
             
             if ligne.startswith("TA  - "):
                 journal = ligne[6:]
@@ -140,8 +151,11 @@ Exemple: "CRISPR organoid differentiation"""
             }
         ]
     )
+
+
     
     return message.content[0].text.strip()
+  
 
 
 
@@ -179,7 +193,7 @@ Réponds en JSON valide, uniquement:
 
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=850,
+        max_tokens=1200,
         temperature=0,
         messages=[
             {
@@ -196,156 +210,63 @@ Réponds en JSON valide, uniquement:
 
 
 
+def synthese_veille(articles, sujet):
+    """Génère une synthèse de veille structurée à partir d'un lot d'articles (abstracts complets)"""
+    
+    liste_articles = ""
+    for i, article in enumerate(articles):
+        liste_articles += f"\n--- Article {i} ---\nTitre: {article['titre']}\nAnnée: {article['annee']}\nAbstract: {article['abstract']}\n"
+    
+    prompt = f"""Tu fais une veille scientifique sur : {sujet}
+
+Voici {len(articles)} articles récents avec leur abstract complet :
+{liste_articles}
+
+Réponds en JSON strict avec cette structure exacte :
+
+{{
+  "intro": "2-4 phrases présentant le domaine et son contexte actuel",
+  "sections": [
+    {{
+      "titre": "Nom de l'axe de recherche",
+      "texte": "Au moins 5 lignes détaillées. Mentionne les données chiffrées EXACTES présentes dans les abstracts (pourcentages, tailles d'échantillon, durées, taux de réussite...) quand elles existent. N'invente JAMAIS un chiffre qui n'est pas dans les abstracts fournis."
+    }}
+  ],
+  "articles_notables": [
+    {{
+      "index": 12,
+      "classification": "innovant",
+      "raison": "Pourquoi cet article se distingue, avec un chiffre clé si présent dans son abstract"
+    }}
+  ]
+}}
+
+Consignes :
+- Identifie 10 axes de recherche maximum, les plus représentés dans le corpus
+- Dans "articles_notables", inclus OBLIGATOIREMENT les deux catégories :
+- 10 articles  maximum classés "innovant" : ceux avec l'approche la plus rare ou différente du corpus
+- 10 articles  maximum  classés "courant" : ceux qui illustrent bien l'approche la PLUS RÉPANDUE et représentative du corpus
+- Chaque section doit faire au minimum 5 lignes, avec des détails précis (pas de généralités vagues)
+- Utilise les données chiffrées réelles des abstracts autant que possible, jamais inventées ou déduites
+- Réponds uniquement en JSON valide, sans texte avant ou après
+- N'invente jamais rien, base-toi uniquement sur les informations des abstracts"""
+    message = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=12000,
+        temperature=0,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    
+    return message.content[0].text
 
 
-def synthese_ia(contenu, sujet, profil="chercheur", nb_articles=10):
+
+
+def synthese_ia(contenu, sujet, profil="etudiant", nb_articles=10):
     print("Analyse IA en cours...", end="\r")
     tokens_max = min(4000 + nb_articles * 200, 16000)
 
-    mots_question = ["comment", "quel", "quels", "quelle", "quelles", "pourquoi", "est-ce que", "est-ce qu'"]
-    est_question = profil == "chercheur" and any(mot in sujet.lower() for mot in mots_question)
-
-
-# 1. Vérification sujet trop vague → on sort immédiatement
-    if profil == "veille" and len(sujet.split()) < 2:
-        return ("⚠️ Sujet trop large — précise ton domaine.\n"
-                "Exemple : 'CRISPR base editing cancer 2024' au lieu de 'CRISPR'")
-    prompts_veille_detail = f"""Tu es un expert en veille scientifique.
-Effectue une veille détaillée sur : {sujet}
-
-📅 PUBLICATIONS RÉCENTES
-Pour chaque article, du plus récent au plus ancien :
-- Numéro · Titre — Auteurs — Journal — Date
-- Résumé en 4-5 phrases fluides expliquant contexte, méthode et impact
-- 🔗 https://pubmed.ncbi.nlm.nih.gov/[PMID]
-
-🚀 NOUVELLES TECHNIQUES ÉMERGENTES
-- Techniques récentes dans ce domaine
-- Comparaison avec anciennes approches
-
-📈 TENDANCES DU DOMAINE
-- Ce qui monte · Ce qui descend · Ce qui explose
-
-🔮 PERSPECTIVES 2-3 ANS
-
-💡 RÉSUMÉ VEILLE — 3 CHOSES À RETENIR
-
-Articles à analyser :
-{contenu}"""
-
-    prompts_veille_moyen = f"""Tu es un expert en veille scientifique.
-Effectue une veille sur : {sujet}
-
-📌 5 ARTICLES INCONTOURNABLES
-Sélectionne les 5 plus importants parmi tous les articles.
-Pour chacun :
-- Titre — Auteurs — Année
-- Pourquoi incontournable : [1-2 phrases basées sur l'abstract]
-- 🔗 lien
-
-📅 PUBLICATIONS RÉCENTES
-Pour chaque article, du plus récent au plus ancien :
-- Numéro · Titre — Auteurs — Journal — Date
-- Résumé en 1-2 phrases : résultat principal uniquement
-- 🔗 https://pubmed.ncbi.nlm.nih.gov/[PMID]
-
-
-🚀 NOUVELLES TECHNIQUES ÉMERGENTES
-
-📈 TENDANCES DU DOMAINE
-- Ce qui monte · Ce qui descend · Ce qui explose
-
-🔮 PERSPECTIVES 2-3 ANS
-
-💡 RÉSUMÉ VEILLE — 3 CHOSES À RETENIR
-
-Articles à analyser :
-{contenu}"""
-
-    prompts_veille_agrege = f"""Tu es un expert en veille scientifique et bibliométrie.
-Effectue une veille macro sur : {sujet}
-Tu as analysé {nb_articles} articles — ne résume pas chaque article individuellement.
-Identifie uniquement les patterns qui reviennent dans plusieurs articles.
-
-📈 TENDANCES MAJEURES DU DOMAINE
-- Ce qui monte · Ce qui descend · Ce qui explose
-
-🚀 TECHNIQUES ÉMERGENTES
-- Techniques apparues récemment
-- Ce qu'elles remplacent et pourquoi
-
-👥 GROUPES DE RECHERCHE ACTIFS
-- Équipes/institutions qui publient le plus
-- Pays les plus actifs
-- Auteurs clés à suivre
-
-📌 10 ARTICLES REPRÉSENTATIFS
-Les 10 articles qui illustrent le mieux les tendances :
-- Numéro · Titre — Auteurs — Année
-- 🔗 https://pubmed.ncbi.nlm.nih.gov/[PMID]
-
-🔮 PERSPECTIVES 2-3 ANS
-
-💡 RÉSUMÉ MACRO — 3 CHOSES À RETENIR
-
-Articles à analyser :
-{contenu}"""
-
-    prompt_veille = ""
-
-    if profil == "veille":
-        if nb_articles <= 10:
-            prompt_veille = prompts_veille_detail
-        elif nb_articles <= 50:
-            prompt_veille = prompts_veille_moyen
-        else:
-            prompt_veille = prompts_veille_agrege
-
-
-    prompt_chercheur_question = f"""Tu es un expert en bioinformatique et biologie moléculaire.
-
-Un chercheur pose cette question précise: {sujet}
-
-RÈGLES ABSOLUES:
-1. Chaque solution DOIT avoir des sources: DOI + auteurs + année
-2. Si tu ne peux pas sourcer → OMETS-LA
-3. Output JSON uniquement, pas de markdown
-
-Réponds en JSON valide:
-
-{{
-  "contexte": "2-3 lignes sur l'état de l'art pour cette question",
-  "solutions": [
-    {{
-      "rang": 1,
-      "nom": "Nom de la solution",
-      "description": "4-5 lignes",
-      "avantages": ["avantage 1", "avantage 2"],
-      "inconvenients": ["inconvenient 1"],
-      "sources": [{{"doi": "10.1038/...", "auteurs": "X et al.", "year": 2024}}]
-    }},
-    {{
-      "rang": 2,
-      "nom": "Solution 2",
-      "description": "...",
-      "avantages": [],
-      "inconvenients": [],
-      "sources": []
-    }}
-  ],
-  "recommandation": "Quelle solution choisir pour ce cas précis et pourquoi"
-}}
-
-Articles à analyser:
-{contenu}"""
-
-   
-    prompts = {
-        "chercheur": prompt_chercheur_question,
-
-
-
-     "etudiant": f"""Tu es un tuteur en bioinformatique et en biologie.
+    prompt_etudiant = f"""Tu es un tuteur en bioinformatique et en biologie.
 Explique ces articles sur : {sujet} de façon pédagogique pour un étudiant en licence/master.
 Utilise un langage simple, explique les termes techniques.
 
@@ -374,97 +295,7 @@ Pour chaque article important :
 Une phrase simple et claire.
 
 Articles à analyser :
-{contenu}""",
-
-
-     "reviewer": f"""Tu es un reviewer scientifique de haut niveau
-pour un journal international (Nature, Cell, Science).
-Effectue une évaluation critique et rigoureuse de ces articles sur : {sujet}
-
-Réponds EXACTEMENT dans ce format :
-
-🌍 CONTEXTE DE L'ÉVALUATION
-- Importance de ce sujet dans la recherche actuelle
-- Nombre d'articles évalués
-- Qualité globale du corpus (1-2 lignes)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 ÉVALUATION DE CHAQUE ARTICLE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Pour CHAQUE article, réponds dans ce format :
-
-📄 ARTICLE : [Titre court]
-Auteurs — Journal — Année
-
-⭐ SCORE GLOBAL : X/10
-
-1️⃣ PERTINENCE DE LA QUESTION SCIENTIFIQUE : X/10
-→ [La question est-elle originale et importante pour le domaine ?]
-
-2️⃣ QUALITÉ MÉTHODOLOGIQUE : X/10
-→ [Les expériences sont-elles bien conçues ? Les contrôles sont-ils présents ?]
-→ [L'échantillon est-il suffisant ?]
-
-3️⃣ SOLIDITÉ DES RÉSULTATS & STATISTIQUES : X/10
-→ [Les données supportent-elles les conclusions ?]
-→ [Les tests statistiques sont-ils appropriés ?]
-
-4️⃣ REPRODUCTIBILITÉ : X/10
-→ [Peut-on refaire l'expérience avec ce qui est décrit ?]
-→ [Les données brutes sont-elles disponibles ?]
-
-5️⃣ CONFLITS D'INTÉRÊTS : ✅ Aucun / ⚠️ Déclaré / 🚩 Problématique
-→ [Qui finance l'étude ? Biais possible ?]
-
-6️⃣ IMPACT SUR LE DOMAINE : X/10
-→ [Est-ce que ça avance vraiment le domaine ?]
-→ [Citations potentielles, applications cliniques ?]
-
-💬 VERDICT FINAL
-✅ ACCEPTER / ⚠️ RÉVISIONS MAJEURES / ❌ REJETER
-→ [Justification en 2-3 lignes]
-
-🔗 https://pubmed.ncbi.nlm.nih.gov/[PMID]
-
-───────────────────────────────
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 BILAN GLOBAL DU CORPUS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-| Critère                    | Score moyen |
-|----------------------------|-------------|
-| Pertinence scientifique    |    X/10     |
-| Qualité méthodologique     |    X/10     |
-| Solidité des résultats     |    X/10     |
-| Reproductibilité           |    X/10     |
-| Impact sur le domaine      |    X/10     |
-| SCORE GLOBAL               |    X/10     |
-
-⭐ TOP ARTICLE DU CORPUS
-→ [Titre] — Score X/10
-→ [Pourquoi c'est le meilleur]
-→ 🔗 lien
-
-🗑️ ARTICLE LE PLUS FAIBLE
-→ [Titre] — Score X/10
-→ [Pourquoi il est le plus faible]
-→ 🔗 lien
-
-💡 RECOMMANDATION FINALE
-→ [Synthèse critique du domaine en 3-4 lignes]
-→ [Quelles questions restent ouvertes ?]
-→ [Quelles expériences manquent dans la littérature ?]
-
-Articles à analyser :
-{contenu}""",
-
-
-
-     "veille": prompt_veille,
-    }
-
+{contenu}"""
 
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",
@@ -472,13 +303,18 @@ Articles à analyser :
         messages=[
             {
                 "role": "user",
-                "content": prompts[profil]
+                "content": prompt_etudiant
             }
         ]
     )
 
     print(" " * 50, end="\r")
+
     return message.content[0].text
+
+
+
+
 
 
 
@@ -491,7 +327,8 @@ def lancer_recherche(sujet, nb_articles=5, profil="chercheur"):
     mots_cles = extraire_mots_cles(sujet)
     print("Mots-clés extraits : " + mots_cles)
 
-    ids = rechercher_articles(mots_cles, nb_articles)
+    tri = "date" if profil == "veille" else "pertinence"
+    ids = rechercher_articles(mots_cles, nb_articles, tri=tri)
     if len(ids) == 0:
         return ("⚠️ Aucun article trouvé pour cette recherche.\n"
                 "Essaie une requête plus large ou reformule ta question.")
@@ -522,12 +359,33 @@ def lancer_recherche(sujet, nb_articles=5, profil="chercheur"):
         cards.sort(key=lambda c: ordre_pertinence.get(c["pertinence_niveau"], 5))
 
         return cards
-        
+
+    elif profil == "veille":
+        resultat_brut = synthese_veille(articles, sujet)
+        resultat_propre = resultat_brut.replace("```json", "").replace("```", "").strip()
+
+        try:
+            data = json.loads(resultat_propre)
+        except json.JSONDecodeError:
+            data = {
+                "intro": "Erreur lors du traitement de la veille. Réessayez.",
+                "sections": [],
+                "articles_notables": []
+            }
+
+        # On relie chaque article notable à ses vraies métadonnées (titre, doi, lien...)
+        for notable in data.get("articles_notables", []):
+            idx = notable["index"]
+            if 0 <= idx < len(articles):
+                notable["article"] = articles[idx]
+
+        return data
+
     else:
-        # Ancien flux pour les autres profils (étudiant, veille) — non encore migré
+        # Ancien flux pour étudiant — non encore migré
         synthese = synthese_ia(contenu, sujet, profil, nb_articles)
         return synthese
-    
+      
 
 #different type de profil ( reponse adaptée en fonction du profil)
 
@@ -540,9 +398,14 @@ def lancer_recherche(sujet, nb_articles=5, profil="chercheur"):
 
 
 if __name__ == "__main__":
-    resultat = lancer_recherche("comment optimiser CRISPR dans les organoids", 5, "chercheur")
-    print("Nombre de cards :", len(resultat))
-    for card in resultat:
-        print(card["titre"])
-        print("Pertinence :", card["pertinence_texte"], "-", card["pertinence_niveau"])
-        print("---")
+    resultat = lancer_recherche("CRISPR base editing", 100, profil="veille")
+    print("INTRO:", resultat["intro"])
+    print("\nNombre de sections:", len(resultat["sections"]))
+    print("Nombre d'articles notables:", len(resultat["articles_notables"]))
+    
+    print("\n--- Vérification du lien article ---")
+    premier_notable = resultat["articles_notables"][0]
+    print("Index:", premier_notable["index"])
+    print("Classification:", premier_notable["classification"])
+    print("Titre relié:", premier_notable["article"]["titre"])
+    print("DOI relié:", premier_notable["article"]["doi"])

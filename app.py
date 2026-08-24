@@ -18,7 +18,6 @@ def recherche():
     resultat = pubmind.lancer_recherche(sujet, nb_articles, profil)
 
     if profil == "chercheur":
-        # Nouvelle architecture : resultat est déjà une liste de dictionnaires (cards)
         cards = resultat
         return render_template("resultat.html",
                              cards=cards,
@@ -26,8 +25,22 @@ def recherche():
                              profil=profil,
                              nb_articles=nb_articles)
 
+    elif profil == "veille":
+        # resultat est déjà un dictionnaire structuré (intro, sections, articles_notables)
+        intro_veille = resultat.get("intro", "")
+        sections_veille = resultat.get("sections", [])
+        articles_notables = resultat.get("articles_notables", [])
+
+        return render_template("resultat.html",
+                             intro_veille=intro_veille,
+                             sections_veille=sections_veille,
+                             articles_notables=articles_notables,
+                             sujet=sujet,
+                             profil=profil,
+                             nb_articles=nb_articles)
+
     else:
-        # Ancien flux pour les autres profils
+        # Ancien flux pour étudiant
         resultat_propre = resultat.replace("```json", "").replace("```", "").strip()
         
         try:

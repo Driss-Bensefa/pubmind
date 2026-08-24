@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PubMind</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
   :root {
     --ink: #e8e6e0;
     --ink-soft: #8a8a82;
-    --paper: #0d0d0c;
+    --paper: #0a0a09;
     --line: #2a2a27;
     --accent: #4ade80;
     --accent-soft: #15201a;
@@ -18,12 +20,38 @@
   html, body { height: 100%; }
 
   body {
-    background: var(--paper);
+    background-color: #0a0a09;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(200,200,195,0.09) 1px, transparent 0);
+    background-size: 16px 16px;
     color: var(--ink);
-    font-family: 'Iowan Old Style', 'Georgia', serif;
+    font-family: 'Source Serif 4', Georgia, serif;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in { animation: fade-up 0.7s ease both; }
+  .fade-in-1 { animation-delay: 0.05s; }
+  .fade-in-2 { animation-delay: 0.15s; }
+  .fade-in-3 { animation-delay: 0.25s; }
+
+  .site-footer {
+    margin-top: auto;
+    padding: 24px 56px;
+    border-top: 1px solid var(--line);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
   }
 
   /* ── TOPBAR ── */
@@ -31,13 +59,17 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 18px 48px;
-    border-bottom: 1px solid var(--line);
+    padding: 28px 64px;
+    border-bottom: 2px solid var(--ink);
     flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    background: var(--paper);
+    z-index: 500;
   }
 
   .topbar-author {
-    font-family: 'Courier New', monospace;
+    font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
     color: var(--ink-soft);
     text-transform: uppercase;
@@ -48,121 +80,296 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
   }
 
   .logo-placeholder {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border: 1.5px solid var(--accent);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--accent);
-    font-family: 'Courier New', monospace;
+    font-family: 'IBM Plex Mono', monospace;
     font-size: 10px;
     letter-spacing: 0.04em;
+    animation: glow-pulse 3.5s ease-in-out infinite;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(74, 222, 128, 0); }
+    50% { box-shadow: 0 0 10px rgba(74, 222, 128, 0.35); }
   }
 
   .mark {
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 700;
     letter-spacing: -0.02em;
-    font-family: 'Iowan Old Style', 'Georgia', serif;
+    font-family: 'Source Serif 4', Georgia, serif;
   }
 
   .mark span { color: var(--accent); }
 
   .topbar-version {
-    font-family: 'Courier New', monospace;
+    font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
     color: var(--ink-soft);
     text-transform: uppercase;
     letter-spacing: 0.1em;
   }
 
-  /* ── MAIN ── */
-  .main {
+  /* ── LAYOUT PRINCIPAL ── */
+  .layout {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: grid;
+    grid-template-columns: 210px minmax(0, 760px) 240px;
     justify-content: center;
-    padding: 48px 80px;
+    gap: 56px;
+    padding: 120px 24px 160px;
+    max-width: 1440px;
+    margin: 0 auto;
+    width: 100%;
   }
 
+  /* ── SIDE NOTES ── */
+  .side-note {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    line-height: 2;
+    color: var(--ink-soft);
+    padding-top: 20px;
+  }
+
+  .side-note--left {
+    padding-right: 32px;
+    border-right: 1px solid var(--line);
+  }
+
+  .side-note-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 32px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .side-note-item {
+    margin-bottom: 30px;
+    padding-left: 16px;
+    position: relative;
+    transition: color 0.25s ease, padding-left 0.25s ease;
+  }
+
+  .side-note-item:hover {
+    color: var(--ink);
+    padding-left: 20px;
+  }
+
+  .side-note-item::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    transition: transform 0.25s ease;
+  }
+
+  .side-note-item:hover::before {
+    transform: translateX(2px);
+  }
+
+  .tip-card {
+    background: var(--accent-soft);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    padding: 30px 28px 28px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
+    position: relative;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+
+  .tip-card:hover {
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(74, 222, 128, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .tip-card-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tip-card-title::before {
+    content: "✎";
+    color: var(--accent);
+    font-size: 13px;
+  }
+
+  .profile-tip {
+    display: none;
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--ink);
+    font-style: italic;
+  }
+
+  .profile-tip.active {
+    display: block;
+    animation: fade-up 0.4s ease both;
+  }
+
+  .profile-tip .tip-label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 16px;
+    font-style: normal;
+  }
+
+  .tip-construction {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+    padding: 3px 8px;
+    margin-top: 16px;
+  }
+
+  .tip-source {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    margin-top: 28px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+
+  /* ── SEARCH AREA ── */
   .search-area {
     width: 100%;
-    max-width: 900px;
     display: flex;
     flex-direction: column;
   }
 
-  /* ── SEARCH EYEBROW ── */
-  .search-eyebrow {
-    font-family: 'Iowan Old Style', 'Georgia', serif;
-    font-size: 25px;
-    font-style: italic;
+  .search-intro {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
     color: var(--ink-soft);
-    margin-bottom: 10px;
+    margin-bottom: 20px;
   }
 
-  /* ── SEARCH INPUT ── */
+  .search-eyebrow {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 34px;
+    font-style: italic;
+    color: var(--ink);
+    margin-bottom: 14px;
+    line-height: 1.3;
+  }
+
+  .search-subtitle {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 15.5px;
+    color: var(--ink-soft);
+    margin-bottom: 64px;
+    line-height: 1.75;
+    max-width: 560px;
+  }
+
   .search-row {
     display: flex;
     align-items: center;
     border-bottom: 2px solid var(--ink);
-    padding-bottom: 14px;
-    margin-bottom: 44px;
-    gap: 14px;
+    padding-bottom: 24px;
+    margin-bottom: 76px;
+    gap: 18px;
+    transition: border-color 0.3s ease, filter 0.3s ease;
+  }
+
+  .search-row:focus-within {
+    border-color: var(--accent);
+    filter: drop-shadow(0 4px 12px rgba(74, 222, 128, 0.18));
   }
 
   .search-arrow {
-    font-family: 'Courier New', monospace;
-    font-size: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
     color: var(--accent);
     flex-shrink: 0;
+    transition: transform 0.3s ease;
+  }
+
+  .search-row:focus-within .search-arrow {
+    transform: translateX(4px);
   }
 
   input[type="text"] {
     flex: 1;
-    font-family: 'Iowan Old Style', 'Georgia', serif;
-    font-size: 25px;
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 28px;
     padding: 0;
     border: none;
     background: transparent;
     color: var(--ink);
   }
 
+  input[type="text"]:-webkit-autofill,
+  input[type="text"]:-webkit-autofill:hover,
+  input[type="text"]:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--ink);
+    -webkit-box-shadow: 0 0 0px 1000px var(--paper) inset;
+    box-shadow: 0 0 0px 1000px var(--paper) inset;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
   input[type="text"]::placeholder {
-    color: var(--line);
+    color: #3a382f;
     font-style: italic;
   }
 
   input[type="text"]:focus { outline: none; }
 
-  /* ── OPTIONS ROW ── */
   .options-row {
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: start;
-    gap: 48px;
-    margin-bottom: 48px;
+    gap: 56px;
+    margin-bottom: 76px;
   }
 
   .group-label {
-    font-family: 'Courier New', monospace;
-    font-size: 15px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     color: var(--ink-soft);
-    margin-bottom: 14px;
+    margin-bottom: 26px;
   }
 
-  /* ── PROFILES ── */
-  .profiles { display: flex; gap: 8px; }
+  .profiles { display: flex; gap: 12px; flex-wrap: nowrap; }
 
-  .profile-option { position: relative; }
+  .profile-option { position: relative; flex: 1; }
 
   .profile-option input {
     position: absolute;
@@ -173,34 +380,43 @@
   .profile-option label {
     display: block;
     border: 1px solid var(--line);
-    padding: 10px 18px 12px;
+    padding: 18px 18px 20px;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.18s;
+    height: 100%;
+    min-height: 96px;
   }
 
   .profile-option label .p-name {
-    font-family: 'Courier New', monospace;
-    font-size: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--ink-soft);
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: 10px;
     transition: color 0.15s;
   }
 
   .profile-option label .p-desc {
-    font-family: 'Iowan Old Style', 'Georgia', serif;
-    font-size: 14px;
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 12.5px;
     color: var(--ink-soft);
     font-style: italic;
     display: block;
     transition: color 0.15s;
+    line-height: 1.4;
   }
 
-  .profile-option label:hover { border-color: var(--ink-soft); }
-  .profile-option label:hover .p-name,
-  .profile-option label:hover .p-desc { color: var(--ink); }
+  .profile-option:not(.disabled) label:hover {
+    border-color: var(--ink-soft);
+    background: rgba(255, 255, 255, 0.03);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  .profile-option:not(.disabled) label:hover .p-name,
+  .profile-option:not(.disabled) label:hover .p-desc { color: var(--ink); }
 
   .profile-option input:checked + label {
     border-color: var(--accent);
@@ -210,120 +426,225 @@
   .profile-option input:checked + label .p-name { color: var(--accent); }
   .profile-option input:checked + label .p-desc { color: var(--accent); opacity: 0.7; }
 
-  /* ── ARTICLES ── */
-  .articles-group { min-width: 180px; }
+  .profile-option.disabled label {
+    cursor: not-allowed;
+    opacity: 0.35;
+  }
+
+  .profile-option.disabled label:hover { border-color: var(--line); }
+  .profile-option.disabled label:hover .p-name,
+  .profile-option.disabled label:hover .p-desc { color: var(--ink-soft); }
+
+  .articles-group { min-width: 210px; }
+
+  .select-wrapper {
+    position: relative;
+  }
+
+  .select-wrapper::after {
+    content: "↓";
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    pointer-events: none;
+  }
 
   select {
     display: block;
     width: 100%;
-    font-family: 'Courier New', monospace;
-    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    padding: 10px 16px;
+    padding: 16px 40px 16px 18px;
     border: 1px solid var(--line);
-    background: transparent;
-    color: var(--ink-soft);
+    background-color: #12120f;
+    color: var(--ink);
     color-scheme: dark;
     cursor: pointer;
-    transition: border-color 0.15s;
+    transition: all 0.18s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  select:hover {
+    border-color: var(--ink-soft);
+    background-color: rgba(255, 255, 255, 0.03);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
   }
 
   select:focus { outline: none; border-color: var(--accent); }
-  select option { background: var(--paper); color: var(--ink); text-transform: none; }
-
-  /* ── SUBMIT ── */
+  select option {
+    background: #12120f;
+    color: var(--ink);
+    text-transform: none;
+    padding: 10px;
+  }
   .submit-row {
     display: flex;
     align-items: center;
-    gap: 20px;
-    padding-top: 40px;
+    gap: 28px;
+    padding-top: 56px;
     border-top: 1px solid var(--line);
   }
 
   button {
-    font-family: 'Courier New', monospace;
-    font-size: 15px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    background: transparent;
-    color: var(--accent);
+    background: var(--accent);
+    color: var(--paper);
     border: 1px solid var(--accent);
-    padding: 14px 36px;
+    padding: 17px 44px;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s;
+    transition: background 0.15s, transform 0.15s, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
   }
 
-  button:hover { background: var(--accent); color: var(--paper); }
+  button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
+    transition: left 0.5s ease;
+  }
+
+  button:hover::before {
+    left: 100%;
+  }
+
+  button:hover {
+    background: #6ee89c;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(74, 222, 128, 0.25);
+  }
 
   .submit-note {
-    font-family: 'Iowan Old Style', 'Georgia', serif;
-    font-size: 15px;
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 14px;
     color: var(--ink-soft);
     font-style: italic;
   }
 
-  /* ── BOTTOM INFO ── */
-  .bottom-info {
-    border-top: 1px solid var(--line);
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    flex-shrink: 0;
-  }
-
-  .info-cell {
-    padding: 20px 32px;
-    border-right: 1px solid var(--line);
-    display: flex;
+  /* ── LOADING SCREEN ── */
+  .loading-screen {
+    display: none;
     flex-direction: column;
-    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    padding: 90px 0;
+    text-align: center;
   }
 
-  .info-cell:last-child { border-right: none; }
-
-  .info-cell-label {
-    font-family: 'Courier New', monospace;
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--accent);
+  .loading-screen.active {
+    display: flex;
   }
 
-  .info-cell-value {
-    font-family: 'Iowan Old Style', 'Georgia', serif;
-    font-size: 22px;
-    color: var(--ink-soft);
-    line-height: 1.5;
+  .loading-spinner {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 36px;
   }
 
-  .info-cell-stat {
-    font-family: 'Courier New', monospace;
-    font-size: 22px;
-    font-weight: 700;
+  .loading-spinner .bar {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 3px;
+    height: 11px;
+    margin-left: -1.5px;
+    background: var(--accent);
+    border-radius: 2px;
+    transform-origin: 1.5px 22px;
+    animation: spin-fade 1s linear infinite;
+  }
+
+  .loading-spinner .bar:nth-child(1)  { transform: rotate(0deg);   animation-delay: -0.875s; }
+  .loading-spinner .bar:nth-child(2)  { transform: rotate(45deg);  animation-delay: -0.75s; }
+  .loading-spinner .bar:nth-child(3)  { transform: rotate(90deg);  animation-delay: -0.625s; }
+  .loading-spinner .bar:nth-child(4)  { transform: rotate(135deg); animation-delay: -0.5s; }
+  .loading-spinner .bar:nth-child(5)  { transform: rotate(180deg); animation-delay: -0.375s; }
+  .loading-spinner .bar:nth-child(6)  { transform: rotate(225deg); animation-delay: -0.25s; }
+  .loading-spinner .bar:nth-child(7)  { transform: rotate(270deg); animation-delay: -0.125s; }
+  .loading-spinner .bar:nth-child(8)  { transform: rotate(315deg); animation-delay: 0s; }
+
+  @keyframes spin-fade {
+    0% { opacity: 1; }
+    100% { opacity: 0.15; }
+  }
+
+  .loading-text {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 24px;
+    font-style: italic;
     color: var(--ink);
-    letter-spacing: -0.02em;
-    line-height: 1;
-    margin-bottom: 2px;
+    margin-bottom: 28px;
+    transition: opacity 0.4s ease;
+    min-height: 32px;
   }
 
-  .info-cell-stat span {
-    color: var(--accent);
+  .loading-track {
+    width: 280px;
+    height: 2px;
+    background: var(--line);
+    overflow: hidden;
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .loading-track::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40%;
+    height: 100%;
+    background: var(--accent);
+    animation: track-slide 1.6s ease-in-out infinite;
+  }
+
+  @keyframes track-slide {
+    0% { left: -40%; }
+    100% { left: 100%; }
+  }
+
+  .loading-note {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+    max-width: 420px;
+  }
+
+  @media (max-width: 1220px) {
+    .layout { grid-template-columns: 1fr; max-width: 760px; }
+    .side-note { display: none; }
   }
 
   @media (max-width: 860px) {
-    .main { padding: 32px 24px; }
-    .options-row { grid-template-columns: 1fr; gap: 24px; }
+    .layout { padding: 48px 24px 80px; }
+    .options-row { grid-template-columns: 1fr; gap: 32px; }
     .profiles { flex-wrap: wrap; }
-    .bottom-info { grid-template-columns: repeat(2, 1fr); }
-    .info-cell { border-right: none; border-bottom: 1px solid var(--line); }
     .topbar { padding: 16px 24px; }
+    .search-eyebrow { font-size: 26px; }
+    input[type="text"] { font-size: 22px; }
   }
 </style>
 </head>
 <body>
 
-  <!-- TOPBAR -->
   <div class="topbar">
     <div class="topbar-author">Driss Bensefa</div>
     <div class="topbar-logo">
@@ -333,16 +654,28 @@
     <div class="topbar-version">v1.0</div>
   </div>
 
-  <!-- MAIN -->
-  <div class="main">
-    <form action="/recherche" method="POST" class="search-area">
+  <div class="layout">
 
+    <!-- COLONNE GAUCHE -->
+    <div class="side-note side-note--left fade-in fade-in-1">
+      <div class="side-note-title">Pourquoi PubMind</div>
+      <div class="side-note-item">Chaque article est traité individuellement — aucune synthèse mélangée entre plusieurs sources.</div>
+      <div class="side-note-item">Sourcing strict : rien n'est affirmé si ce n'est pas littéralement dans l'abstract analysé.</div>
+      <div class="side-note-item">Un niveau de pertinence expliqué pour chaque résultat, pas juste une liste triée.</div>
+      <div class="side-note-item">Lien direct vers PubMed et DOI pour vérifier chaque source.</div>
+    </div>
+
+    <!-- COLONNE CENTRALE -->
+    <form action="/recherche" method="POST" class="search-area fade-in fade-in-2" id="search-form">
+
+      <div class="search-intro">Assistant de recherche biomédical</div>
       <div class="search-eyebrow"><span style="color:var(--accent)">N</span>ouvelle recherche</div>
+      <div class="search-subtitle">Posez une question précise. PubMind interroge PubMed, analyse chaque article séparément et classe les résultats par pertinence réelle.</div>
 
       <div class="search-row">
         <span class="search-arrow">→</span>
         <input type="text" name="sujet"
-               placeholder="CRISPR base editing cancer 2024" required>
+               placeholder="Comment optimiser CRISPR dans les organoïdes ?" required>
       </div>
 
       <div class="options-row">
@@ -352,34 +685,26 @@
           <div class="profiles">
 
             <div class="profile-option">
-              <input type="radio" id="p-etudiant" name="profil" value="etudiant">
+              <input type="radio" id="p-etudiant" name="profil" value="etudiant" data-tip="tip-etudiant">
               <label for="p-etudiant">
                 <span class="p-name">Étudiant</span>
-                <span class="p-desc">explications simplifiées</span>
+                <span class="p-desc">concepts expliqués simplement</span>
               </label>
             </div>
 
             <div class="profile-option">
-              <input type="radio" id="p-chercheur" name="profil" value="chercheur" checked>
+              <input type="radio" id="p-chercheur" name="profil" value="chercheur" checked data-tip="tip-chercheur">
               <label for="p-chercheur">
                 <span class="p-name">Chercheur</span>
-                <span class="p-desc">protocoles & données</span>
+                <span class="p-desc">pour une question précise et ciblée</span>
               </label>
             </div>
 
             <div class="profile-option">
-              <input type="radio" id="p-reviewer" name="profil" value="reviewer">
-              <label for="p-reviewer">
-                <span class="p-name">Reviewer</span>
-                <span class="p-desc">évaluation critique</span>
-              </label>
-            </div>
-
-            <div class="profile-option">
-              <input type="radio" id="p-veille" name="profil" value="veille">
+              <input type="radio" id="p-veille" name="profil" value="veille" data-tip="tip-veille">
               <label for="p-veille">
                 <span class="p-name">Veille</span>
-                <span class="p-desc">tendances du domaine</span>
+                <span class="p-desc">tendances sur gros volume</span>
               </label>
             </div>
 
@@ -388,52 +713,171 @@
 
         <div class="articles-group">
           <div class="group-label">Nombre d'articles</div>
-          <select name="nb_articles">
-            <option value="10" selected>10 — rapide</option>
-            <option value="25">25 — standard</option>
-            <option value="50">50 — approfondi</option>
-            <option value="100">100 — veille large</option>
-          </select>
+          <div class="select-wrapper">
+            <select name="nb_articles" id="nb-articles-select">
+              <option value="10" data-profils="chercheur,etudiant" selected>10 — rapide (~1 min)</option>
+              <option value="25" data-profils="chercheur,etudiant">25 — standard (~2 min)</option>
+              <option value="50" data-profils="veille">50 — veille (~30 sec)</option>
+              <option value="100" data-profils="veille">100 — veille large (~40 sec)</option>
+            </select>
+          </div>
         </div>
 
       </div>
 
       <div class="submit-row">
-        <button type="submit">Analyser →</button>
-        <span class="submit-note">15 à 40 secondes selon le nombre d'articles.</span>
+        <button type="submit" id="submit-btn">Analyser →</button>
+        <span class="submit-note" id="submit-note">1 à 2 minutes selon le nombre d'articles.</span>
+      </div>
+
+      <div class="loading-screen" id="loading-screen">
+        <div class="loading-spinner">
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+        </div>
+        <div class="loading-text" id="loading-text">Interrogation de la base PubMed...</div>
+        <div class="loading-track"></div>
+        <div class="loading-note">Cela peut prendre 1 à 2 minutes selon le nombre d'articles.</div>
       </div>
 
     </form>
+
+    <!-- COLONNE DROITE -->
+    <div class="side-note fade-in fade-in-3">
+      <div class="tip-card">
+        <div class="tip-card-title">Conseil d'utilisation</div>
+
+        <div class="profile-tip active" id="tip-chercheur">
+          <span class="tip-label">Profil chercheur</span>
+          Modèle plus efficace sur des questions précises. « Comment optimiser X dans Y ? » donne un tri par pertinence bien plus discriminant que des mots-clés isolés comme « X cancer ».
+          <br><br>
+          Privilégiez l'anglais pour les termes techniques (gènes, protéines, méthodes) : la recherche PubMed y est plus précise.
+          <br><br>
+          10 articles suffisent pour une question ciblée ; 25 pour un sujet qui couvre plusieurs approches.
+        </div>
+
+        <div class="profile-tip" id="tip-etudiant">
+          <span class="tip-label">Profil étudiant</span>
+          Explique les concepts, gènes et techniques du sujet en langage simple, avec un contexte pédagogique plutôt qu'une analyse article par article.
+          <br><br>
+          Idéal pour découvrir un domaine ou réviser un concept sans prérequis technique poussé.
+        </div>
+
+        <div class="profile-tip" id="tip-veille">
+          <span class="tip-label">Profil veille</span>
+          Analyse jusqu'à 100 publications récentes triées par date pour dégager les axes de recherche dominants et repérer les approches qui se démarquent.
+          <br><br>
+          Chaque approche notable est classée « innovante » (rare dans le corpus) ou « courante » (largement représentée), avec des données chiffrées issues des abstracts.
+          <br><br>
+          Idéal pour un sujet large : formulez plutôt un domaine (« CRISPR base editing ») qu'une question précise.
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- BOTTOM INFO -->
-  <div class="bottom-info">
+  <footer class="site-footer">
+    <span>PubMind v1.0</span>
+    <span>Powered by NCBI / PubMed</span>
+  </footer>
 
-    <div class="info-cell">
-      <div class="info-cell-label">Base de données</div>
-      <div class="info-cell-stat"><span>35</span>M</div>
-      <div class="info-cell-value">articles PubMed indexés via NCBI Entrez API</div>
-    </div>
+  <script>
+    const radios = document.querySelectorAll('input[name="profil"]');
+    const tips = document.querySelectorAll('.profile-tip');
+    const nbArticlesSelect = document.getElementById('nb-articles-select');
+    const nbArticlesOptions = nbArticlesSelect.querySelectorAll('option');
 
-    <div class="info-cell">
-      <div class="info-cell-label">Capacité d'analyse</div>
-      <div class="info-cell-stat"><span>100</span></div>
-      <div class="info-cell-value">articles analysés simultanément par requête</div>
-    </div>
+    function updateArticlesOptions(profil) {
+      let premierVisible = null;
 
-    <div class="info-cell">
-      <div class="info-cell-label">Profils disponibles</div>
-      <div class="info-cell-stat"><span>4</span></div>
-      <div class="info-cell-value">Étudiant · Chercheur · Reviewer · Veille</div>
-    </div>
+      nbArticlesOptions.forEach(option => {
+        const profilsAutorises = option.dataset.profils.split(',');
+        const estAutorise = profilsAutorises.includes(profil);
 
-    <div class="info-cell">
-      <div class="info-cell-label">Temps d'analyse</div>
-      <div class="info-cell-stat">&lt;<span>60</span>s</div>
-      <div class="info-cell-value">pour une synthèse complète et sourcée</div>
-    </div>
+        option.hidden = !estAutorise;
+        option.disabled = !estAutorise;
 
-  </div>
+        if (estAutorise && !premierVisible) {
+          premierVisible = option;
+        }
+      });
+
+      if (premierVisible) {
+        nbArticlesSelect.value = premierVisible.value;
+      }
+    }
+
+    radios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        tips.forEach(tip => tip.classList.remove('active'));
+        const target = document.getElementById(radio.dataset.tip);
+        if (target) target.classList.add('active');
+
+        updateArticlesOptions(radio.value);
+      });
+    });
+
+    updateArticlesOptions(document.querySelector('input[name="profil"]:checked').value);
+
+    const form = document.getElementById('search-form');
+    const loadingScreen = document.getElementById('loading-screen');
+    const loadingText = document.getElementById('loading-text');
+
+    const loadingSteps = [
+      "Interrogation de la base PubMed...",
+      "Récupération des métadonnées...",
+      "Lecture des résumés scientifiques...",
+      "Analyse du contenu de l'article...",
+      "Identification des données chiffrées...",
+      "Vérification des données sourcées...",
+      "Repérage des auteurs et publications...",
+      "Évaluation de la pertinence...",
+      "Comparaison entre les publications...",
+      "Analyse du contexte expérimental...",
+      "Extraction des résultats clés...",
+      "Structuration des résultats...",
+      "Recoupement des informations...",
+      "Vérification de la cohérence scientifique...",
+      "Classification par niveau de pertinence...",
+      "Analyse des méthodologies employées...",
+      "Consolidation des synthèses...",
+      "Mise en forme des résultats...",
+      "Contrôle de la qualité des sources...",
+      "Préparation de l'affichage des résultats..."
+    ];
+
+    let stepIndex = 0;
+    let stepInterval = null;
+
+    function nextStep() {
+      loadingText.style.opacity = 0;
+      setTimeout(() => {
+        stepIndex = (stepIndex + 1) % loadingSteps.length;
+        loadingText.textContent = loadingSteps[stepIndex];
+        loadingText.style.opacity = 1;
+      }, 400);
+    }
+
+    form.addEventListener('submit', () => {
+      document.querySelector('.search-eyebrow').style.display = 'none';
+      document.querySelector('.search-subtitle').style.display = 'none';
+      document.querySelector('.search-intro').style.display = 'none';
+      document.querySelector('.search-row').style.display = 'none';
+      document.querySelector('.options-row').style.display = 'none';
+      document.querySelector('.submit-row').style.display = 'none';
+      loadingScreen.classList.add('active');
+
+      stepIndex = 0;
+      loadingText.textContent = loadingSteps[0];
+      stepInterval = setInterval(nextStep, 4500);
+    });
+  </script>
 
 </body>
 </html>
