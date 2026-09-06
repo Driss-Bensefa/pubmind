@@ -60,6 +60,10 @@
     padding: 0 24px 100px;
   }
 
+  .shell--wide {
+    max-width: 1340px;
+  }
+
   .masthead {
     display: flex;
     align-items: center;
@@ -220,7 +224,6 @@
     font-size: 15px;
     line-height: 1.75;
     color: var(--ink);
-    max-width: 70ch;
   }
 
   .veille-section-texte p {
@@ -239,13 +242,45 @@
     border-radius: 3px;
   }
 
+  .veille-layout {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 56px;
+    align-items: start;
+  }
+
+  .veille-main {
+    min-width: 0;
+  }
+
+  .veille-side {
+    position: sticky;
+    top: 96px;
+    min-width: 0;
+    max-height: calc(100vh - 116px);
+    overflow-y: auto;
+    padding-bottom: 24px;
+  }
+
   .veille-notables-titre {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
-    margin: 48px 0 20px;
-    padding-top: 32px;
-    border-top: 2px solid var(--ink);
+    margin: 0 0 16px;
     color: var(--ink);
+  }
+
+  @media (max-width: 980px) {
+    .veille-layout {
+      grid-template-columns: 1fr;
+    }
+    .veille-side {
+      position: static;
+      max-height: none;
+      overflow-y: visible;
+      margin-top: 20px;
+      padding-top: 32px;
+      border-top: 2px solid var(--ink);
+    }
   }
 
   .veille-acteurs-titre {
@@ -343,14 +378,14 @@
     display: flex;
     flex-direction: column;
     border: 1px solid var(--line);
-    margin-bottom: 48px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   }
 
   .veille-ligne {
     display: flex;
-    align-items: center;
-    gap: 18px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
     padding: 16px 20px;
     border-bottom: 1px solid var(--line);
     cursor: pointer;
@@ -358,6 +393,12 @@
     animation: fade-up 0.5s ease both;
     position: relative;
     overflow: hidden;
+  }
+
+  .veille-ligne-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
   .veille-ligne:last-child {
@@ -391,9 +432,7 @@
     font-family: 'IBM Plex Mono', monospace;
     font-size: 12px;
     color: var(--ink-soft);
-    width: 22px;
     flex-shrink: 0;
-    text-align: right;
   }
 
   .veille-ligne-badges {
@@ -429,10 +468,9 @@
   .veille-ligne-badge.classification-courant { color: #041a0d; background: var(--green); }
 
   .veille-ligne-titre {
-    font-size: 15px;
+    font-size: 14px;
     color: var(--ink);
-    line-height: 1.4;
-    flex: 1;
+    line-height: 1.45;
     transition: color 0.25s ease;
   }
 
@@ -441,19 +479,7 @@
   }
 
   .veille-ligne-fleche {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 15px;
-    color: var(--ink-soft);
-    flex-shrink: 0;
-    opacity: 0;
-    transform: translateX(-6px);
-    transition: opacity 0.25s ease, transform 0.25s ease;
-  }
-
-  .veille-ligne:hover .veille-ligne-fleche {
-    opacity: 1;
-    transform: translateX(0);
-    color: var(--accent);
+    display: none;
   }
 
   .card.classification-innovant {
@@ -768,6 +794,108 @@
     color: var(--ink);
   }
 
+  /* ── CONTENU MARKDOWN CONVERTI (profil Étudiant) ── */
+  .etudiant-contenu {
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--ink);
+    max-width: 760px;
+  }
+
+  .etudiant-contenu h1 {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .etudiant-contenu h2 {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 36px 0 14px;
+  }
+
+  .etudiant-contenu h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    margin: 24px 0 10px;
+  }
+
+  .etudiant-contenu p {
+    margin-bottom: 16px;
+  }
+
+  .etudiant-contenu strong {
+    color: var(--ink);
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  .etudiant-contenu ul,
+  .etudiant-contenu ol {
+    margin: 0 0 16px;
+    padding-left: 24px;
+  }
+
+  .etudiant-contenu li {
+    margin-bottom: 8px;
+    line-height: 1.6;
+  }
+
+  .etudiant-contenu hr {
+    border: none;
+    border-top: 1px solid var(--line);
+    margin: 32px 0;
+  }
+
+  .etudiant-contenu a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .etudiant-contenu a:hover {
+    text-decoration: underline;
+  }
+
+  .etudiant-contenu table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 14px;
+  }
+
+  .etudiant-contenu th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .etudiant-contenu td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    vertical-align: top;
+  }
+
+  .etudiant-contenu tr:hover td {
+    background: var(--accent-soft);
+  }
+
   .empty-state {
     color: var(--ink-soft);
     font-size: 15px;
@@ -798,7 +926,7 @@
 </head>
 <body>
 
-<div class="shell">
+<div class="shell{{ ' shell--wide' if profil == 'veille' else '' }}">
 
   <div class="masthead fade-in">
     <div class="mark">Pub<span>Mind</span></div>
@@ -896,63 +1024,76 @@
 
   {% elif profil == "veille" %}
 
-    {% if intro_veille %}
-    <div class="intro-block fade-in fade-in-2">
-      <div class="intro-text">{{ intro_veille }}</div>
-    </div>
-    {% endif %}
+    <div class="veille-layout">
 
-    {% for section in sections_veille %}
-    <div class="veille-section fade-in">
-      <div class="veille-section-titre">{{ section.titre }}</div>
-      <div class="veille-section-texte">{{ section.texte | safe }}</div>
-    </div>
-    {% endfor %}
+      <div class="veille-main">
 
-    {% if auteurs_actifs %}
-    <div class="veille-acteurs-titre">Acteurs actifs du domaine</div>
-    <div class="veille-acteurs-liste fade-in">
-      {% for acteur in auteurs_actifs %}
-      <div class="veille-acteur">
-        <span class="veille-acteur-nom">{{ acteur.nom }}</span>
-        <span class="veille-acteur-observation">{{ acteur.observation }}</span>
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
+        {% if intro_veille %}
+        <div class="intro-block fade-in fade-in-2">
+          <div class="intro-text">{{ intro_veille }}</div>
+        </div>
+        {% endif %}
 
-    {% if a_retenir %}
-    <div class="veille-retenir fade-in">
-      <div class="veille-retenir-titre">Ce qu'il faut retenir</div>
-      <ul class="veille-retenir-liste">
-        {% for point in a_retenir %}
-        <li>{{ point }}</li>
+        {% for section in sections_veille %}
+        <div class="veille-section fade-in">
+          <div class="veille-section-titre">{{ section.titre }}</div>
+          <div class="veille-section-texte">{{ section.texte | safe }}</div>
+        </div>
         {% endfor %}
-      </ul>
-    </div>
-    {% endif %}
 
-    {% if articles_notables %}
+        {% if auteurs_actifs %}
+        <div class="veille-acteurs-titre">Acteurs actifs du domaine</div>
+        <div class="veille-acteurs-liste fade-in">
+          {% for acteur in auteurs_actifs %}
+          <div class="veille-acteur">
+            <span class="veille-acteur-nom">{{ acteur.nom }}</span>
+            <span class="veille-acteur-observation">{{ acteur.observation }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
 
-    <div class="veille-notables-titre">Articles notables</div>
+        {% if a_retenir %}
+        <div class="veille-retenir fade-in">
+          <div class="veille-retenir-titre">Ce qu'il faut retenir</div>
+          <ul class="veille-retenir-liste">
+            {% for point in a_retenir %}
+            <li>{{ point }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
 
-    <div class="veille-legende">
-      <span class="legende-item"><span class="legende-dot" style="background: var(--gold);"></span> Innovant / rare</span>
-      <span class="legende-item"><span class="legende-dot" style="background: var(--green);"></span> Courant / représentatif</span>
-    </div>
-
-    <div class="veille-liste">
-      {% for notable in articles_notables %}
-      <div class="veille-ligne classification-{{ notable.classification }}" style="animation-delay: {{ (loop.index0 * 0.03)|round(2) }}s" onclick="openModal({{ loop.index0 }})">
-        <span class="veille-ligne-numero">{{ loop.index }}</span>
-        <span class="veille-ligne-badges">
-          <span class="veille-ligne-type">{{ notable.article.type }}</span>
-          <span class="veille-ligne-badge classification-{{ notable.classification }}">{{ notable.classification }}</span>
-        </span>
-        <span class="veille-ligne-titre">{{ notable.article.titre }}</span>
-        <span class="veille-ligne-fleche">→</span>
       </div>
-      {% endfor %}
+
+      {% if articles_notables %}
+      <div class="veille-side">
+
+        <div class="veille-notables-titre">Articles notables</div>
+
+        <div class="veille-legende">
+          <span class="legende-item"><span class="legende-dot" style="background: var(--gold);"></span> Innovant / rare</span>
+          <span class="legende-item"><span class="legende-dot" style="background: var(--green);"></span> Courant / représentatif</span>
+        </div>
+
+        <div class="veille-liste">
+          {% for notable in articles_notables %}
+          <div class="veille-ligne classification-{{ notable.classification }}" style="animation-delay: {{ (loop.index0 * 0.03)|round(2) }}s" onclick="openModal({{ loop.index0 }})">
+            <div class="veille-ligne-top">
+              <span class="veille-ligne-numero">{{ loop.index }}</span>
+              <span class="veille-ligne-badges">
+                <span class="veille-ligne-type">{{ notable.article.type }}</span>
+                <span class="veille-ligne-badge classification-{{ notable.classification }}">{{ notable.classification }}</span>
+              </span>
+            </div>
+            <span class="veille-ligne-titre">{{ notable.article.titre }}</span>
+          </div>
+          {% endfor %}
+        </div>
+
+      </div>
+      {% endif %}
+
     </div>
 
     {% for notable in articles_notables %}
@@ -985,85 +1126,11 @@
     </div>
     {% endfor %}
 
-    {% endif %}
-
   {% else %}
 
-    {% if contexte %}
-    <div class="contexte">
-      <strong>Contexte:</strong> {{ contexte }}
-    </div>
-    {% endif %}
-
-    {% if solutions %}
-    <div class="solutions-grid">
-      {% for sol in solutions %}
-      <div class="card" style="animation-delay: {{ (loop.index0 * 0.06)|round(2) }}s" onclick="openModal({{ loop.index0 }})">
-        <div class="card-header">
-          <span class="card-type">{{ sol.rang }}</span>
-        </div>
-        <div class="card-nom">{{ sol.nom }}</div>
-        <div class="card-description">{{ sol.description }}</div>
-        <div class="card-footer">
-          <span>Détails →</span>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-
-    {% for sol in solutions %}
-    <div class="modal" id="modal-{{ loop.index0 }}">
-      <div class="modal-content">
-        <button class="modal-close" onclick="closeModal({{ loop.index0 }})">✕</button>
-
-        <div class="modal-title">{{ sol.rang }}. {{ sol.nom }}</div>
-
-        <div class="modal-section">
-          <div class="modal-section-title">Description</div>
-          <div class="modal-section-content">{{ sol.description }}</div>
-        </div>
-
-        {% if sol.avantages %}
-        <div class="modal-section">
-          <div class="modal-section-title">Avantages</div>
-          <ul class="modal-list">
-            {% for avantage in sol.avantages %}
-            <li>{{ avantage }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-        {% endif %}
-
-        {% if sol.inconvenients %}
-        <div class="modal-section">
-          <div class="modal-section-title">Inconvenients</div>
-          <ul class="modal-list">
-            {% for inconvenient in sol.inconvenients %}
-            <li>{{ inconvenient }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-        {% endif %}
-
-        {% if sol.sources %}
-        <div class="modal-section">
-          <div class="modal-section-title">Sources</div>
-          {% for source in sol.sources %}
-          <div class="modal-source">
-            <strong>{{ source.auteurs }} ({{ source.year }})</strong><br>
-            DOI: <a href="https://doi.org/{{ source.doi }}" target="_blank">{{ source.doi }}</a>
-          </div>
-          {% endfor %}
-        </div>
-        {% endif %}
-      </div>
-    </div>
-    {% endfor %}
-    {% endif %}
-
-    {% if recommandation %}
-    <div class="recommandation">
-      <strong>💡 Recommandation:</strong> {{ recommandation }}
+    {% if contexte_html %}
+    <div class="etudiant-contenu fade-in">
+      {{ contexte_html | safe }}
     </div>
     {% endif %}
 

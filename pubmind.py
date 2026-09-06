@@ -161,10 +161,6 @@ Exemple: "CRISPR organoid differentiation"""
 
 
 
-
-
-
-
 def synthese_article(article, sujet):
     """Génère un résumé pour UN article, basé uniquement sur son abstract"""
     

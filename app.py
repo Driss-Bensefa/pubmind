@@ -46,27 +46,15 @@ def recherche():
                         
 
     else:
-    
-        # Ancien flux pour étudiant
-        resultat_propre = resultat.replace("```json", "").replace("```", "").strip()
-        
-        try:
-            data = json.loads(resultat_propre)
-            solutions = data.get("solutions", [])
-            contexte = data.get("contexte", "")
-            recommandation = data.get("recommandation", "")
-        except json.JSONDecodeError:
-            solutions = []
-            contexte = resultat
-            recommandation = ""
+        # Profil étudiant : le contenu est du Markdown, pas du JSON
+        resultat_propre = resultat.replace("```markdown", "").replace("```", "").strip()
+        contexte_html = markdown.markdown(resultat_propre, extensions=['tables'])
 
         return render_template("resultat.html",
-                             contexte=contexte,
-                             solutions=solutions,
-                             recommandation=recommandation,
+                             contexte_html=contexte_html,
                              sujet=sujet,
                              profil=profil,
                              nb_articles=nb_articles)
-
+    
 if __name__ == "__main__":
     app.run(debug=True)
