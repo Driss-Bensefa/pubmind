@@ -220,6 +220,23 @@
     font-size: 15px;
     line-height: 1.75;
     color: var(--ink);
+    max-width: 70ch;
+  }
+
+  .veille-section-texte p {
+    margin-bottom: 14px;
+  }
+
+  .veille-section-texte p:last-child {
+    margin-bottom: 0;
+  }
+
+  .veille-section-texte strong {
+    color: var(--ink);
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 1px 5px;
+    border-radius: 3px;
   }
 
   .veille-notables-titre {
@@ -229,6 +246,85 @@
     padding-top: 32px;
     border-top: 2px solid var(--ink);
     color: var(--ink);
+  }
+
+  .veille-acteurs-titre {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+    margin: 40px 0 16px;
+  }
+
+  .veille-acteurs-liste {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+
+  .veille-acteur {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .veille-acteur-nom {
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .veille-acteur-observation {
+    color: var(--ink-soft);
+  }
+
+  .veille-retenir {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    padding: 22px 24px;
+    margin: 36px 0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  .veille-retenir-titre {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .veille-retenir-liste {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .veille-retenir-liste li {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ink);
+    padding-left: 24px;
+    position: relative;
+    margin-bottom: 12px;
+  }
+
+  .veille-retenir-liste li:last-child {
+    margin-bottom: 0;
+  }
+
+  .veille-retenir-liste li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: 700;
   }
 
   .veille-legende {
@@ -241,6 +337,123 @@
     letter-spacing: 0.05em;
     color: var(--ink-soft);
     margin-bottom: 24px;
+  }
+
+  .veille-liste {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+    margin-bottom: 48px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  .veille-ligne {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    transition: background 0.25s ease, padding-left 0.25s ease;
+    animation: fade-up 0.5s ease both;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .veille-ligne:last-child {
+    border-bottom: none;
+  }
+
+  .veille-ligne::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--line);
+    transition: background 0.25s ease, width 0.25s ease;
+  }
+
+  .veille-ligne.classification-innovant::before { background: var(--gold-line); }
+  .veille-ligne.classification-courant::before { background: var(--green-line); }
+
+  .veille-ligne:hover {
+    background: var(--accent-soft);
+    padding-left: 26px;
+  }
+
+  .veille-ligne:hover::before {
+    width: 5px;
+  }
+
+  .veille-ligne-numero {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    width: 22px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .veille-ligne-badges {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .veille-ligne-type {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+    padding: 3px 8px;
+    white-space: nowrap;
+  }
+
+  .veille-ligne-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 9px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .veille-ligne-badge.classification-innovant { color: #1a1502; background: var(--gold); }
+  .veille-ligne-badge.classification-courant { color: #041a0d; background: var(--green); }
+
+  .veille-ligne-titre {
+    font-size: 15px;
+    color: var(--ink);
+    line-height: 1.4;
+    flex: 1;
+    transition: color 0.25s ease;
+  }
+
+  .veille-ligne:hover .veille-ligne-titre {
+    color: var(--accent);
+  }
+
+  .veille-ligne-fleche {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+
+  .veille-ligne:hover .veille-ligne-fleche {
+    opacity: 1;
+    transform: translateX(0);
+    color: var(--accent);
   }
 
   .card.classification-innovant {
@@ -692,9 +905,32 @@
     {% for section in sections_veille %}
     <div class="veille-section fade-in">
       <div class="veille-section-titre">{{ section.titre }}</div>
-      <div class="veille-section-texte">{{ section.texte }}</div>
+      <div class="veille-section-texte">{{ section.texte | safe }}</div>
     </div>
     {% endfor %}
+
+    {% if auteurs_actifs %}
+    <div class="veille-acteurs-titre">Acteurs actifs du domaine</div>
+    <div class="veille-acteurs-liste fade-in">
+      {% for acteur in auteurs_actifs %}
+      <div class="veille-acteur">
+        <span class="veille-acteur-nom">{{ acteur.nom }}</span>
+        <span class="veille-acteur-observation">{{ acteur.observation }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if a_retenir %}
+    <div class="veille-retenir fade-in">
+      <div class="veille-retenir-titre">Ce qu'il faut retenir</div>
+      <ul class="veille-retenir-liste">
+        {% for point in a_retenir %}
+        <li>{{ point }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
 
     {% if articles_notables %}
 
@@ -705,18 +941,16 @@
       <span class="legende-item"><span class="legende-dot" style="background: var(--green);"></span> Courant / représentatif</span>
     </div>
 
-    <div class="solutions-grid">
+    <div class="veille-liste">
       {% for notable in articles_notables %}
-      <div class="card classification-{{ notable.classification }}" style="animation-delay: {{ (loop.index0 * 0.06)|round(2) }}s" onclick="openModal({{ loop.index0 }})">
-        <div class="card-header">
-          <span class="card-type">{{ notable.article.type }}</span>
-          <span class="card-classification-top classification-{{ notable.classification }}">{{ notable.classification }}</span>
-        </div>
-        <div class="card-nom">{{ notable.article.titre }}</div>
-        <div class="card-description">{{ notable.raison }}</div>
-        <div class="card-footer">
-          <span>Détails →</span>
-        </div>
+      <div class="veille-ligne classification-{{ notable.classification }}" style="animation-delay: {{ (loop.index0 * 0.03)|round(2) }}s" onclick="openModal({{ loop.index0 }})">
+        <span class="veille-ligne-numero">{{ loop.index }}</span>
+        <span class="veille-ligne-badges">
+          <span class="veille-ligne-type">{{ notable.article.type }}</span>
+          <span class="veille-ligne-badge classification-{{ notable.classification }}">{{ notable.classification }}</span>
+        </span>
+        <span class="veille-ligne-titre">{{ notable.article.titre }}</span>
+        <span class="veille-ligne-fleche">→</span>
       </div>
       {% endfor %}
     </div>

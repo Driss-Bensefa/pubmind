@@ -30,16 +30,23 @@ def recherche():
         intro_veille = resultat.get("intro", "")
         sections_veille = resultat.get("sections", [])
         articles_notables = resultat.get("articles_notables", [])
+        auteurs_actifs = resultat.get("auteurs_actifs",[])
+        a_retenir = resultat.get("a_retenir", "")
+
 
         return render_template("resultat.html",
                              intro_veille=intro_veille,
                              sections_veille=sections_veille,
                              articles_notables=articles_notables,
+                             auteurs_actifs=auteurs_actifs,
+                            a_retenir=a_retenir,
                              sujet=sujet,
                              profil=profil,
                              nb_articles=nb_articles)
+                        
 
     else:
+    
         # Ancien flux pour étudiant
         resultat_propre = resultat.replace("```json", "").replace("```", "").strip()
         

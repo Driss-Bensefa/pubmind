@@ -215,22 +215,33 @@ def synthese_veille(articles, sujet):
     
     liste_articles = ""
     for i, article in enumerate(articles):
-        liste_articles += f"\n--- Article {i} ---\nTitre: {article['titre']}\nAnnée: {article['annee']}\nAbstract: {article['abstract']}\n"
+        liste_articles += f"\n--- Article {i} ---\nType: {article['type']}\nAuteurs: {article['auteurs']}\nJournal: {article['journal']}\nTitre: {article['titre']}\nAnnée: {article['annee']}\nAbstract: {article['abstract']}\n"
     
     prompt = f"""Tu fais une veille scientifique sur : {sujet}
 
-Voici {len(articles)} articles récents avec leur abstract complet :
+Voici {len(articles)} articles récents avec leur abstract complet, triés du plus récent au plus ancien :
 {liste_articles}
 
 Réponds en JSON strict avec cette structure exacte :
 
 {{
-  "intro": "2-4 phrases présentant le domaine et son contexte actuel",
+  "intro": "3-4 phrases présentant le domaine, son contexte actuel, et si le rythme de publication semble s'accélérer, se stabiliser ou ralentir sur la période couverte par ce corpus",
   "sections": [
     {{
       "titre": "Nom de l'axe de recherche",
-      "texte": "Au moins 5 lignes détaillées. Mentionne les données chiffrées EXACTES présentes dans les abstracts (pourcentages, tailles d'échantillon, durées, taux de réussite...) quand elles existent. N'invente JAMAIS un chiffre qui n'est pas dans les abstracts fournis."
+      "texte": "environ 5 lignes détaillées, organisées en 2-3 paragraphes séparés par un saut de ligne vide (\\n\\n) entre chaque paragraphe. À l'intérieur du texte, mets en gras avec des astérisques doubles (**mot**) les données chiffrées importantes et les noms clés (ex: **1,75 fois**, **article 4**). Mentionne les données chiffrées EXACTES présentes dans les abstracts quand elles existent. N'invente JAMAIS un chiffre qui n'est pas dans les abstracts fournis."
     }}
+  ],
+  "auteurs_actifs": [
+    {{
+      "nom": "Nom de l'auteur ou de l'équipe",
+      "observation": "Pourquoi cet acteur ressort (ex: apparaît dans plusieurs articles du corpus, ou publie une contribution particulièrement notable)"
+    }}
+  ],
+  "a_retenir": [
+    "Point concret et actionnable 1",
+    "Point concret et actionnable 2",
+    "Point concret et actionnable 3"
   ],
   "articles_notables": [
     {{
@@ -242,23 +253,25 @@ Réponds en JSON strict avec cette structure exacte :
 }}
 
 Consignes :
-- Identifie 10 axes de recherche maximum, les plus représentés dans le corpus
+- Identifie 5 à 6 axes de recherche maximum, les plus représentés dans le corpus
+-  Dans "auteurs_actifs", utilise UNIQUEMENT les vrais noms d'auteurs fournis dans le champ "Auteurs" de chaque article (format "Nom, Prénom"). N'invente JAMAIS un nom de groupe ou d'équipe thématique. Identifie 2 à 4 auteurs qui apparaissent dans plusieurs articles du corpus, ou dont la contribution ressort clairement. Si aucun auteur ne revient clairement plusieurs fois, laisse cette liste vide.
+- Dans "a_retenir", donne 3 à 5 points courts et concrets (une phrase chacun) sur ce que ces tendances impliquent pour quelqu'un qui travaille ou débute sur ce sujet aujourd'hui
 - Dans "articles_notables", inclus OBLIGATOIREMENT les deux catégories :
-- 10 articles  maximum classés "innovant" : ceux avec l'approche la plus rare ou différente du corpus
-- 10 articles  maximum  classés "courant" : ceux qui illustrent bien l'approche la PLUS RÉPANDUE et représentative du corpus
+- 4 à 6 articles classés "innovant" : ceux avec l'approche la plus rare ou différente du corpus
+- 4 à 6 articles classés "courant" : ceux qui illustrent bien l'approche la PLUS RÉPANDUE et représentative du corpus
 - Chaque section doit faire au minimum 5 lignes, avec des détails précis (pas de généralités vagues)
 - Utilise les données chiffrées réelles des abstracts autant que possible, jamais inventées ou déduites
-- Réponds uniquement en JSON valide, sans texte avant ou après
-- N'invente jamais rien, base-toi uniquement sur les informations des abstracts"""
+- N'invente jamais rien, base-toi uniquement sur les informations des abstracts et métadonnées fournies
+- Réponds uniquement en JSON valide, sans texte avant ou après"""
+
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=12000,
+        max_tokens=8000,
         temperature=0,
         messages=[{"role": "user", "content": prompt}]
     )
     
     return message.content[0].text
-
 
 
 
@@ -315,6 +328,29 @@ Articles à analyser :
 
 
 
+def convertir_markdown_simple(texte):
+    """Convertit un texte avec **gras** et paragraphes séparés en HTML"""
+    
+    paragraphes = texte.split("\n\n")
+    
+    html = ""
+    for paragraphe in paragraphes:
+        paragraphe = paragraphe.strip()
+        if paragraphe:
+            paragraphe = paragraphe.replace("**", "<STRONG_TEMP>")
+            morceaux = paragraphe.split("<STRONG_TEMP>")
+            
+            paragraphe_html = ""
+            for i, morceau in enumerate(morceaux):
+                if i % 2 == 1:
+                    paragraphe_html += "<strong>" + morceau + "</strong>"
+                else:
+                    paragraphe_html += morceau
+            
+            html += "<p>" + paragraphe_html + "</p>"
+    
+    return html
+
 
 
 
@@ -370,8 +406,14 @@ def lancer_recherche(sujet, nb_articles=5, profil="chercheur"):
             data = {
                 "intro": "Erreur lors du traitement de la veille. Réessayez.",
                 "sections": [],
-                "articles_notables": []
+                "articles_notables": [],
+                "auteurs_actifs": [],
+                "a_retenir": []
             }
+
+        # Convertir le texte de chaque section en HTML propre (paragraphes + gras)
+        for section in data.get("sections", []):
+            section["texte"] = convertir_markdown_simple(section["texte"])
 
         # On relie chaque article notable à ses vraies métadonnées (titre, doi, lien...)
         for notable in data.get("articles_notables", []):
@@ -380,6 +422,7 @@ def lancer_recherche(sujet, nb_articles=5, profil="chercheur"):
                 notable["article"] = articles[idx]
 
         return data
+
 
     else:
         # Ancien flux pour étudiant — non encore migré
@@ -398,14 +441,22 @@ def lancer_recherche(sujet, nb_articles=5, profil="chercheur"):
 
 
 if __name__ == "__main__":
-    resultat = lancer_recherche("CRISPR base editing", 100, profil="veille")
-    print("INTRO:", resultat["intro"])
-    print("\nNombre de sections:", len(resultat["sections"]))
-    print("Nombre d'articles notables:", len(resultat["articles_notables"]))
+    sujet = "vache folle"
+    ids = rechercher_articles(sujet, 50, tri="date")
+    contenu = telecharger_articles(ids)
+    articles = parser_articles(contenu)
     
-    print("\n--- Vérification du lien article ---")
-    premier_notable = resultat["articles_notables"][0]
-    print("Index:", premier_notable["index"])
-    print("Classification:", premier_notable["classification"])
-    print("Titre relié:", premier_notable["article"]["titre"])
-    print("DOI relié:", premier_notable["article"]["doi"])
+    resultat_brut = synthese_veille(articles, sujet)
+    resultat_propre = resultat_brut.replace("```json", "").replace("```", "").strip()
+    
+    try:
+        data = json.loads(resultat_propre)
+        print("✅ JSON valide")
+        print("\nINTRO:", data["intro"])
+        print("\nNombre de sections:", len(data["sections"]))
+        print("Nombre d'acteurs actifs:", len(data.get("acteurs_actifs", [])))
+        print("Implication pratique:", data.get("implication_pratique", "ABSENT"))
+        print("Nombre d'articles notables:", len(data["articles_notables"]))
+    except json.JSONDecodeError as e:
+        print("❌ ERREUR JSON:", e)
+        print(resultat_brut[:3000])
