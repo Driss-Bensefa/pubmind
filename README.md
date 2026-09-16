@@ -32,7 +32,7 @@ PubMind est construit pour rendre ce comportement structurellement impossible, p
 
 ### Chercheur — répondre à une question précise
 
-Pour une question ciblée (« comment optimiser CRISPR dans les organoïdes intestinaux ? »).
+Pour une question ciblée (« comment optimiser l'efficacité du CRISPR base editing dans les organoïdes ? »).
 
 - Recherche PubMed triée par pertinence
 - Un appel Claude par article, indépendant des autres
@@ -40,15 +40,15 @@ Pour une question ciblée (« comment optimiser CRISPR dans les organoïdes inte
 - Tri automatique par pertinence (haute / moyenne / faible / hors sujet), avec code couleur
 - Lien direct vers PubMed et DOI pour vérification
 
-![Résultats du profil Chercheur, triés par pertinence](screenshot/cardchercheur.png)
+![Grille de cartes triées par pertinence, code couleur haute/moyenne/faible](screenshot/profil-chercheur/liste-cards.png)
 
-Chaque carte s'ouvre sur le détail complet — résumé, résultats clés, justification de la pertinence, et les métadonnées vérifiables (auteurs, journal, DOI, lien PubMed direct vers l'article source).
+Chaque carte s'ouvre sur le détail complet — résumé fidèle à l'abstract, justification de la pertinence, et les métadonnées vérifiables (auteurs, journal, DOI, lien PubMed direct vers l'article source).
 
-![Détail d'un article avec sources vérifiables](screenshot/resultatchercheur.png)
+![Détail d'un article : résumé, pertinence justifiée, métadonnées vérifiables](screenshot/profil-chercheur/detail-article.png)
 
-Le lien DOI de chaque carte mène directement à l'article réel — la meilleure façon de vérifier soi-même que le résumé généré correspond bien à la source.
+Le lien DOI mène directement à l'article réel — la meilleure façon de vérifier soi-même que le résumé généré correspond bien à la source.
 
-![L'article source réel, accessible depuis le lien DOI de la carte](screenshot/liencardchercheur.png)
+![L'article source réel (Advanced Science), accessible depuis le lien DOI de la carte](screenshot/profil-chercheur/article-source.png)
 
 ### Veille — se mettre à jour sur un domaine
 
@@ -56,18 +56,28 @@ Pour un sujet large (« CRISPR base editing », « single cell RNA sequencing »
 
 - Recherche PubMed triée par date de publication (les plus récents d'abord)
 - Jusqu'à 100 articles analysés en un seul appel optimisé
-- Synthèse narrative structurée en sections thématiques adaptées au corpus
+- Synthèse narrative structurée en sections thématiques adaptées au corpus, avec les données chiffrées mises en avant
 - Dynamique temporelle du domaine (accélération, stabilisation, ralentissement)
-- Auteurs récurrents identifiés à partir des métadonnées réelles
-- Points actionnables en conclusion (« Ce qu'il faut retenir »)
 - Articles notables classés « innovant » (approche rare dans le corpus) ou « courant » (approche représentative) — classification basée sur la fréquence observée, pas sur un jugement subjectif
 - Mise en page à deux colonnes : synthèse à gauche, articles notables à droite, visibles simultanément pendant la lecture
 
-![Sélection du profil Veille et du volume d'articles](screenshot/selectionveille.png)
+![Sélection du profil Veille et du volume d'articles à analyser](screenshot/profil-veille/selection.png)
+
+![Synthèse en deux colonnes : sections thématiques à gauche, articles notables classés à droite](screenshot/profil-veille/resultat.png)
+
+Chaque article notable s'ouvre sur la justification de son classement, reliée à ses vraies métadonnées.
+
+![Détail d'un article notable : pourquoi il se distingue, avec sa source vérifiable](screenshot/profil-veille/article-notable.png)
 
 ### Étudiant — explications simplifiées
 
-Pour explorer un sujet sans prérequis technique poussé : concepts vulgarisés, gènes et protéines expliqués en langage simple, techniques définies, avec un lien systématique vers l'article source.
+Pour explorer un sujet sans prérequis technique poussé : résumé vulgarisé, gènes et protéines expliqués en langage simple dans un tableau de référence, techniques définies, et pour chaque article une explication en langage courant avec son lien PubMed.
+
+![Résumé pédagogique et tableau des gènes/protéines expliqués simplement](screenshot/profil-etudiant/resultat-1.png)
+
+![Détail article par article, en langage simple, avec lien vers la source](screenshot/profil-etudiant/resultat-2.png)
+
+> Le profil Étudiant n'a pas encore les mêmes garde-fous de sourcing strict que Chercheur et Veille — voir Limites connues.
 
 ---
 
@@ -87,10 +97,6 @@ Sujet utilisateur
 ```
 
 **`parser_articles()`** est le cœur de la fiabilité : un parser MEDLINE écrit à la main qui extrait huit champs par article (PMID, titre multi-lignes, type de publication, année, journal, auteurs, DOI, abstract), en gérant les cas particuliers du format — champs sur plusieurs lignes, identifiants multiples (`[doi]` vs `[pii]`), abstracts absents.
-
-L'écran de chargement affiche une estimation réaliste du temps d'attente plutôt qu'une fausse promesse de rapidité.
-
-![Écran de chargement pendant l'analyse](screenshot/homepage-chargement.png)
 
 ---
 
@@ -154,7 +160,7 @@ Le profil Chercheur fait un appel par article (précision maximale, temps propor
 
 - L'analyse porte sur les **abstracts**, pas les textes intégraux. PubMind oriente vers les bons articles ; il ne remplace pas leur lecture.
 - L'extraction de mots-clés peut réduire le nombre de résultats sur des questions très spécifiques.
-- Le profil Étudiant n'a pas encore les mêmes garde-fous de sourcing strict que Chercheur et Veille.
+- Le profil Étudiant n'a pas encore les garde-fous de sourcing strict (chiffres vérifiés contre l'abstract) appliqués sur Chercheur et Veille.
 - Application locale, non déployée.
 
 ---
