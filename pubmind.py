@@ -6,6 +6,7 @@
 from Bio import Entrez
 import os
 import json
+import re
 from anthropic import Anthropic
 
 
@@ -271,55 +272,97 @@ Consignes :
 
 
 
-def synthese_ia(contenu, sujet, profil="etudiant", nb_articles=10):
+def synthese_ia(articles, sujet, nb_articles=10):
+    """Profil étudiant : explication du domaine + articles suggérés (sourcing strict)"""
     print("Analyse IA en cours...", end="\r")
-    tokens_max = min(4000 + nb_articles * 200, 16000)
+    tokens_max = min(4000 + nb_articles * 500, 16000)
 
-    prompt_etudiant = f"""Tu es un tuteur en bioinformatique et en biologie.
-Explique ces articles sur : {sujet} de façon pédagogique pour un étudiant en licence/master.
-Utilise un langage simple, explique les termes techniques.
+    liste_articles = ""
+    for article in articles:
+        liste_articles += (
+            f"\n--- PMID {article['pmid']} ---\n"
+            f"Type: {article['type']}\n"
+            f"Titre: {article['titre']}\n"
+            f"Abstract: {article['abstract']}\n"
+        )
 
-Réponds EXACTEMENT dans ce format :
+    prompt_etudiant = f"""Tu es un professeur de biologie et de bioinformatique. Un étudiant (licence/master) te pose cette question : {sujet}
 
-📚 RÉSUMÉ SIMPLIFIÉ (3-4 lignes)
-Explique comme si j'avais 20 ans et peu d'expérience.
+Ta réponse a exactement deux parties, dans cet ordre.
 
-🧬 GÈNES & PROTÉINES (avec explication simple)
-Ex: BRCA1 = gène suppresseur de tumeur impliqué dans le cancer du sein
+## 🎓 Comprendre le domaine
+*Explication générale du professeur, non tirée des articles ci-dessous.*
 
-🦠 MALADIES ÉTUDIÉES
-Liste et explique brièvement chaque maladie.
+Réponds à la question comme en cours :
+- Pars du contexte, puis va du plus simple au plus avancé.
+- Définis les termes essentiels à connaître (en **gras**), avec une analogie quand elle aide.
+- Uniquement des connaissances générales et établies du domaine : aucun chiffre précis, aucun résultat récent, aucune affirmation présentée comme venant d'une étude.
 
-⚙️ TECHNIQUES UTILISÉES (avec explication)
-Ex: CRISPR = outil qui permet de couper et modifier l'ADN
+## 📚 Pour aller plus loin
+Sélectionne parmi les articles fournis ceux qui aident vraiment à approfondir la question. Ignore ceux hors sujet. Pour chacun, respecte exactement ce format :
 
-📖 CE QUE DISENT LES ARTICLES
-Pour chaque article important :
-- Auteurs — Journal — Année
-- 💬 En langage simple : ce que les chercheurs ont découvert
-- 📍 Où dans l'article : Introduction / Résultats / Discussion
-- 🔗 https://pubmed.ncbi.nlm.nih.gov/[PMID]
+[ARTICLE: numéro PMID]
 
-💡 CE QUE JE DOIS RETENIR
-Une phrase simple et claire.
+**Synthèse** : 2 à 4 phrases sur ce que rapporte l'article.
 
-Articles à analyser :
-{contenu}"""
+**Points clés** :
+
+- point 1
+- point 2
+
+**Pourquoi le lire** : une phrase qui relie l'article à la question de l'étudiant.
+
+[LIEN: numéro PMID]
+
+RÈGLES STRICTES POUR "POUR ALLER PLUS LOIN" :
+- Tout ce que tu dis d'un article doit être explicitement présent dans son abstract. Reformule simplement, sans ajouter de comparaison, de jugement ("prometteur", "prouve") ni de conclusion.
+- N'écris jamais de titre, d'auteur, de journal, d'année ni d'URL : utilise uniquement [ARTICLE: numéro] et [LIEN: numéro], en recopiant exactement le PMID fourni.
+- Si "Type: REVIEW", commence la synthèse par "Cette revue fait le point sur…" et n'attribue jamais ses résultats à ses auteurs.
+- N'utilise jamais un article dont l'abstract est vide.
+
+Commence directement par "## 🎓 Comprendre le domaine", sans phrase d'introduction ni de conclusion.
+
+Articles :
+{liste_articles}"""
 
     message = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=tokens_max,
-        messages=[
-            {
-                "role": "user",
-                "content": prompt_etudiant
-            }
-        ]
+        temperature=0,
+        messages=[{"role": "user", "content": prompt_etudiant}]
     )
 
     print(" " * 50, end="\r")
-
     return message.content[0].text
+
+
+def retirer_preambule(texte, marqueur):
+    """Supprime tout ce qui précède le premier marqueur attendu."""
+    position = texte.find(marqueur)
+    if position == -1:
+        return texte
+    return texte[position:]
+
+
+def inserer_metadonnees(texte, articles):
+    """Remplace [ARTICLE: pmid] et [LIEN: pmid] par les vraies données de l'article."""
+    par_pmid = {article["pmid"]: article for article in articles}
+
+    def remplacer(correspondance):
+        balise = correspondance.group(1)
+        pmid = correspondance.group(2)
+        article = par_pmid.get(pmid)
+
+        if article is None:
+            return f"⚠️ *PMID {pmid} absent des articles téléchargés*"
+
+        if balise == "ARTICLE":
+            return (f"### {article['titre']}\n\n"
+                    f"*{article['auteurs']} — {article['journal']} — {article['annee']}*")
+        else:
+            return f"[🔗 Lire l'article sur PubMed](https://pubmed.ncbi.nlm.nih.gov/{pmid})"
+
+    return re.sub(r"\[(ARTICLE|LIEN):\s*(\d+)\]", remplacer, texte)
 
 
 
@@ -421,9 +464,9 @@ def lancer_recherche(sujet, nb_articles=5, profil="chercheur"):
 
 
     else:
-        # Ancien flux pour étudiant — non encore migré
-        synthese = synthese_ia(contenu, sujet, profil, nb_articles)
-        return synthese
+        synthese = synthese_ia(articles, sujet, nb_articles)
+        synthese = retirer_preambule(synthese, "## 🎓")
+        return inserer_metadonnees(synthese, articles)
       
 
 #different type de profil ( reponse adaptée en fonction du profil)
