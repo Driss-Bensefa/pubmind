@@ -1,6 +1,8 @@
 # Tests unitaires de PubMind
 # Lancer depuis la racine du projet avec : pytest -v
 
+from multiprocessing import context
+
 from pubmind import retirer_preambule, inserer_metadonnees
 
 
@@ -48,9 +50,20 @@ def test_pmid_invente_donne_avertissement_et_pas_de_lien():
 from pubmind import parser_articles 
 
 MEDLINE_TEST = "\nPMID- 1\nTI  - Titre\nAB  - abstract "
+MEDLINE_TITRE_LONG =f"""
+PMID- 2
+TI  - Functional analysis of TTN uORFs reveals
+      context-dependent translational regulation.
+PG  - 123-130"""
+
+
 
 def  test_extraction_exacte_parser_articles():
     resultat =parser_articles(MEDLINE_TEST)
     assert resultat[0]['pmid'] == "1"
     assert resultat[0]['titre'] == "Titre"
     assert resultat[0]['abstract'] == "abstract"
+
+def test_extraction_titre_long_parser_articles():
+    resultat =parser_articles(MEDLINE_TITRE_LONG)
+    assert resultat[0]['titre'] == "Functional analysis of TTN uORFs reveals context-dependent translational regulation."
