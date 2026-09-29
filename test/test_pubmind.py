@@ -78,3 +78,14 @@ def test_extraction_abstract_multiligne():
     resultat = parser_articles(MEDLINE_ABSTRACT)
     assert resultat[0]['abstract'] == "Brain organoids are three-dimensional models derived from stem cells. They reproduce key steps of human cortical development."
 
+
+MEDLINE_REVIEW = """
+PMID- 5
+TI  - Titre revue systematique
+PT  - Journal Article
+PT  - Systematic Review
+AB  - Abstract de la revue systematique."""
+
+def test_verification_review_or_article():
+    resultat = parser_articles(MEDLINE_REVIEW)
+    assert resultat[0]["type"] == "REVIEW"
