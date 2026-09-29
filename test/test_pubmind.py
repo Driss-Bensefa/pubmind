@@ -55,6 +55,12 @@ PMID- 2
 TI  - Functional analysis of TTN uORFs reveals
       context-dependent translational regulation.
 PG  - 123-130"""
+MEDLINE_ABSTRACT =f"""
+PMID- 3
+TI  - Titre court
+AB  - Brain organoids are three-dimensional models derived from stem cells.
+      They reproduce key steps of human cortical development.
+FAU - Dupont, Alice"""
 
 
 
@@ -64,6 +70,11 @@ def  test_extraction_exacte_parser_articles():
     assert resultat[0]['titre'] == "Titre"
     assert resultat[0]['abstract'] == "abstract"
 
-def test_extraction_titre_long_parser_articles():
+def test_extraction_titre_long():
     resultat =parser_articles(MEDLINE_TITRE_LONG)
     assert resultat[0]['titre'] == "Functional analysis of TTN uORFs reveals context-dependent translational regulation."
+
+def test_extraction_abstract_multiligne():
+    resultat = parser_articles(MEDLINE_ABSTRACT)
+    assert resultat[0]['abstract'] == "Brain organoids are three-dimensional models derived from stem cells. They reproduce key steps of human cortical development."
+
