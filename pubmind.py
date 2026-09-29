@@ -13,7 +13,7 @@ from anthropic import Anthropic
 client = Anthropic()
 
 # Ton email pour identifier tes requêtes auprès du NCBI
-Entrez.email = "driss.bensefa@gmail.com"
+Entrez.email = os.environ.get("NCBI_EMAIL")
 
 def rechercher_articles(sujet, nb_articles=5, tri="pertinence"):
     print("recherche en cours pour : " + sujet, end="\r")
@@ -85,7 +85,7 @@ def parser_articles(contenu):
             elif dans_titre :
                 dans_titre = False
 
-            if ligne.startswith("PT  - Review"):
+            if ligne.startswith("PT  -") and "Review" in ligne:
                 type_article = "REVIEW"
             
             if ligne.startswith("DP  -"):
